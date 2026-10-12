@@ -32,6 +32,7 @@ Every change to Tattle is test-first (the rule is in [CLAUDE.md](../CLAUDE.md)).
 | The website, hey-tattle.com (its head, icons, crawl files, and what the release rewrites in it) | `tests/website.test.ts`, which reads `website/` | Vitest | node |
 | End-to-end, web page | `e2e/web/*.spec.ts` (harness in `e2e/harness/`) | Playwright (Chromium) | real browser |
 | End-to-end, Mac app | `e2e/electron/*.spec.ts` | Playwright `_electron` | development app |
+| End-to-end, website (the 3D key resting and its CSS fallback, the record button's name, footer targets, the docs' contents fold, nothing off a phone screen) | `e2e/website/*.spec.ts`: serves `website/` from disk and Three.js from the `three` devDependency, offline | Playwright (Chromium, SwiftShader) | real browser |
 | Capture helper (Swift) | `native/capture/Tests/tattle-capture-tests/*.swift` | `swift test` | — |
 
 - Pure web modules (`web/src/router.ts`, `web/src/state.ts`) can be tested in node without the docblock.

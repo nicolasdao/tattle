@@ -658,7 +658,7 @@
         "Coverage policy",
         "Rules for new tests"
       ],
-      "line_count": 143,
+      "line_count": 144,
       "links_to": [
         "CLAUDE.md",
         "docs/architecture.md",
@@ -762,7 +762,7 @@
         "Changing the site",
         "Releases update the site"
       ],
-      "line_count": 192,
+      "line_count": 201,
       "links_to": [
         "docs/desktop.md",
         "docs/gotchas.md",
@@ -784,6 +784,11 @@
         "website/experiments/**",
         "website/robots.txt",
         "website/sitemap.xml",
+        "website/_redirects",
+        "website/llms.txt",
+        "website/docs.md",
+        "scripts/make-docs-md.mjs",
+        "e2e/website/**",
         "website/og.jpg",
         "website/favicon.*",
         "website/apple-touch-icon.png",

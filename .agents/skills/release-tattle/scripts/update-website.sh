@@ -1,7 +1,7 @@
 #!/bin/sh
 # Writes the published release v<version> into the website's page (website/index.html), so hey-tattle.com names it and
 # links its DMG even without JavaScript or GitHub's API: the three Download for Mac links (hero, header bar, sign-off), the version and size under the
-# button, the footer's "Latest release" line (date and release notes), and the JSON-LD softwareVersion and downloadUrl.
+# button, the footer's "Latest release" line (date and release notes), and the JSON-LD softwareVersion, downloadUrl, fileSize and releaseNotes.
 # Reads everything from the published GitHub Release, so run it only after deploy.sh. Changes no other file, commits
 # nothing, and can be run again. The page's own script still refreshes these from GitHub when it loads.
 #   update-website.sh <version>
@@ -34,6 +34,8 @@ const edits = [
   [/(<p class="fine-rel" data-release)( hidden)?>/g, `$1>`, 1],
   [/("softwareVersion": ")[^"]*(")/g, `$1${version}$2`, 1],
   [/("downloadUrl": ")[^"]*(")/g, `$1${v.url}$2`, 1],
+  [/("fileSize": ")[^"]*(")/g, `$1${v.size}$2`, 1],
+  [/("releaseNotes": ")[^"]*(")/g, `$1${v.notes}$2`, 1],
 ];
 for (const [re, to, want] of edits) {
   const n = (html.match(re) || []).length;

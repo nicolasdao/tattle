@@ -42,7 +42,8 @@ body { background: var(--ground); }
   clip-path: polygon(var(--slant) 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%);
 }
 .strap .eyebrow { display: flex; align-items: center; gap: 7px; white-space: nowrap; font: 700 11.5px/1 var(--cond); letter-spacing: 0.16em; text-transform: uppercase; color: var(--strap-eyebrow); }
-.strap .name { margin: 5px 0 0; font: 800 27px/1 var(--cond); letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strap-h { margin: 0; display: flex; flex-direction: column; min-width: 0; font: inherit; } /* a section's heading: its eyebrow and name */
+.strap .name { display: block; margin: 5px 0 0; font: 800 27px/1 var(--cond); letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .clock {
   flex: none; display: flex; flex-direction: column; justify-content: center; padding: 0 24px 0 30px; margin-left: calc(-1 * var(--slant));
   background: var(--deck); clip-path: polygon(var(--slant) 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%);
@@ -54,6 +55,7 @@ body { background: var(--ground); }
 
 .lede { margin: 26px 0 24px; max-width: 29em; font: 500 21px/1.42 var(--body); color: var(--ink-2); text-wrap: pretty; }
 .lede b { color: var(--ink); font-weight: 700; }
+.intro { margin: -8px 0 24px; max-width: 34em; font: 400 15px/1.5 var(--body); color: var(--mute); text-wrap: pretty; }
 
 /* the download: big, first, the app's primary strap */
 .dl { display: grid; justify-items: start; gap: 12px; }
@@ -290,7 +292,7 @@ main { position: relative; z-index: 1; }
 .jev-thesis { margin: 0; font: 800 clamp(40px, 4.6vw, 64px)/0.95 var(--cond); text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
 .jev-body p { margin: 0 0 16px; color: var(--ink-2); font-size: 17.5px; line-height: 1.6; max-width: 36em; }
 .jev-body b { color: var(--ink); font-weight: 600; }
-.jev-body a, .jev-origin a:not(.lnk), .sys-foot a, .jc-note a { color: var(--accent); }
+.jev-body a, .jev-origin a:not(.lnk), .sys-foot a, .jc-note a, .onmac-note a { color: var(--accent); }
 
 .jev-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 44px 0 28px; }
 .jstat { background: var(--deck); padding: 20px 20px 22px; border-top: 4px solid var(--accent); display: grid; align-content: start; gap: 10px; }
@@ -469,8 +471,9 @@ main { position: relative; z-index: 1; }
 .fine-rel a { color: var(--ink-2); }
 .fine-by { margin: -6px 0 14px; color: var(--ink-2); font-size: 15px; }
 .fine-by a { color: var(--ink); font-weight: 600; }
-.fine-links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-bottom: 28px; }
-.fine-links a { font: 700 14px/1 var(--cond); letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; color: var(--ink-2); }
+/* Each link is a 24 px target (padding, not margin, so targets never overlap); the list's margins absorb the padding. */
+.fine-links { display: flex; flex-wrap: wrap; gap: 0 22px; margin: -5px 0 23px; }
+.fine-links a { display: inline-flex; align-items: center; min-height: 24px; font: 700 14px/1 var(--cond); letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; color: var(--ink-2); }
 .fine-links a:hover { color: var(--accent); }
 .fine-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 40px; }
 .fine-cols p { margin: 0; color: var(--mute); font-size: 14px; line-height: 1.6; }
@@ -562,6 +565,7 @@ html { scroll-behavior: smooth; }
   .strap .eyebrow { font-size: 10.5px; letter-spacing: 0.12em; }
   .clock { display: none; }
   .lede { font-size: 18px; margin: 18px 0 18px; }
+  .intro { font-size: 14px; margin: -6px 0 18px; }
   .ca-download.big { font-size: 25px; padding: 21px calc(28px + var(--slant)) 21px 22px; }
   .ca-download.big svg { width: 24px; height: 24px; }
   .dl-other { padding: 14px 16px; }

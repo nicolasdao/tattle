@@ -1,0 +1,27 @@
+# Tattle for Mac
+
+> Tattle for Mac is a free, open-source macOS app (BSD 3-Clause) that transcribes your calls and podcasts live, maps the conversation on a timeline, and fact-checks claims as they're said. It runs on Apple Silicon Macs with macOS 14.2 or later, in English. On macOS 26 or later, transcription runs on the Mac with Apple Speech, free and private; older macOS uses your own OpenAI key. Fact-checking, labels and Chat use your own OpenRouter key. Made by Nicolas Dao at Cloudless Labs. Not affiliated with Tattle Civic Tech or other apps named Tattle.
+
+## Docs
+
+- [The whole manual, as Markdown](https://hey-tattle.com/docs.md): every feature of the app on one page
+- [Quick start](https://hey-tattle.com/docs#start): what you need, and a first show in six steps
+- [Install and permissions](https://hey-tattle.com/docs#install): the DMG, the two macOS permissions, checking the signature
+- [Keys and accounts](https://hey-tattle.com/docs#keys): which features need an OpenAI or OpenRouter key
+- [Transcription engines](https://hey-tattle.com/docs#transcription): Apple Speech on the Mac, or OpenAI
+- [Speakers](https://hey-tattle.com/docs#speakers): telling voices apart and naming them
+- [The timeline](https://hey-tattle.com/docs#timeline): the conversation cut into segments, each labelled by your label set
+- [Fact-checking](https://hey-tattle.com/docs#fact-checking): what gets checked, the verdicts, and their sources
+- [Label sets](https://hey-tattle.com/docs#label-sets): your own timeline labels, made by hand or with AI
+- [Chat](https://hey-tattle.com/docs#chat): questions about a transcript, live or recorded
+- [Recordings](https://hey-tattle.com/docs#recordings): the library, playback, replay, export and import
+- [Costs](https://hey-tattle.com/docs#costs): what each feature costs per hour of show
+- [Privacy](https://hey-tattle.com/docs#privacy): what leaves your Mac, where, and when
+- [Troubleshooting](https://hey-tattle.com/docs#troubleshooting): common problems and their fixes
+- [Limits](https://hey-tattle.com/docs#limits): what Tattle does not do
+
+## Source and releases
+
+- [Source code](https://github.com/nicolasdao/tattle): the repository, with its developer documentation
+- [Releases](https://github.com/nicolasdao/tattle/releases): the signed, notarized DMGs and their release notes
+- [License](https://github.com/nicolasdao/tattle/blob/master/LICENSE): BSD 3-Clause

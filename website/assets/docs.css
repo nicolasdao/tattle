@@ -19,6 +19,7 @@ html, body.docs-page { overflow-x: clip; }
   background: var(--live); color: #fff; clip-path: polygon(0 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%); }
 .dlede { margin: 0; max-width: 40em; font: 500 21px/1.5 var(--body); color: var(--ink-2); text-wrap: pretty; }
 .dlede b { color: var(--ink); font-weight: 700; }
+.dmeta { margin: -8px 0 0; max-width: 52em; font-size: 14px; line-height: 1.5; color: var(--mute); }
 .dhead-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
 .dhead .ca-download { font-size: 20px; padding: 15px calc(24px + var(--slant)) 15px 20px; }
 
@@ -64,6 +65,7 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font: 700 0.8
   background: var(--deck-3); border: 1px solid var(--rule); border-bottom-width: 3px; border-radius: 3px; padding: 3px 6px 2px; }
 /* a UI label, as it appears in the app */
 .ui { font-weight: 600; color: var(--ink); white-space: nowrap; }
+@media (max-width: 899px) { .ui.long { white-space: normal; } } /* a sentence-long label would run off a phone screen */
 
 /* chips: what a feature needs */
 .needs { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 14px; }
@@ -88,8 +90,10 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font: 700 0.8
 .read table { width: 100%; border-collapse: collapse; font-size: 15.5px; line-height: 1.5; }
 .read th { text-align: left; font: 700 13px/1.2 var(--cond); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); padding: 10px 12px; border-bottom: 2px solid var(--rule); vertical-align: bottom; }
 .read td { padding: 10px 12px; border-bottom: 1px solid var(--rule); color: var(--ink-2); vertical-align: top; }
-.read td:first-child { color: var(--ink); font-weight: 600; }
-.read tbody tr:nth-child(odd) td { background: rgba(15, 32, 56, 0.55); }
+.read td:first-child, .read tbody th { color: var(--ink); font-weight: 600; }
+.read tbody th { padding: 10px 12px; border-bottom: 1px solid var(--rule); font: inherit; font-weight: 600; letter-spacing: normal; text-transform: none; text-align: left; vertical-align: top; } /* a row's name, styled as its first cell */
+.read thead td { padding: 10px 12px; border-bottom: 2px solid var(--rule); } /* the empty corner above the row names */
+.read tbody tr:nth-child(odd) td, .read tbody tr:nth-child(odd) th { background: rgba(15, 32, 56, 0.55); }
 
 /* verdict swatches, as the app's lower thirds */
 .vd { display: inline-block; font: 800 13px/1 var(--cond); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 14px 5px 8px; color: #fff;

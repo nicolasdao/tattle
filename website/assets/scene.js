@@ -226,6 +226,7 @@ export function createScene({ canvas, stage, reduced }) {
   const tilt = { x: 0, y: 0, tx: 0, ty: 0 };
   let who = "host", ringClock = 0, pulseClock = 0, idleRingClock = 0;
   let visible = true, raf = 0, last = 0, lastInput = performance.now();
+  const REST_AFTER = 9000;                  // ms without input before the key stops drawing
   let t0 = performance.now();
   let viewShift = { x: 0, y: 0 };
 
@@ -349,7 +350,7 @@ export function createScene({ canvas, stage, reduced }) {
         if (ringClock <= 0) { spawnRing(COLORS[who], 0.95); ringClock = 0.55 + Math.random() * 0.5; }
         pulseClock -= dt;
         if (pulseClock <= 0) { spawnPulse(); pulseClock = 1.1; }
-      } else if (L === 0) {
+      } else if (L === 0 && now - lastInput < REST_AFTER) { // idle rings only while someone is around, so the loop can rest
         idleRingClock -= dt;
         if (idleRingClock <= 0) { spawnRing(COLORS.accent, 0.35); idleRingClock = 2.8; }
       }
@@ -380,7 +381,7 @@ export function createScene({ canvas, stage, reduced }) {
     if (Math.abs(vz) > 1e-3 || held) return true;
     if (Math.abs(tilt.tx - tilt.x) > 1e-3 || Math.abs(tilt.ty - tilt.y) > 1e-3) return true;
     if (rings.some((r) => r.t < 1)) return true;
-    return now - lastInput < 9000; // breathe while someone is around; then rest
+    return now - lastInput < REST_AFTER; // breathe while someone is around; then rest
   }
 
   function render() { renderer.render(scene, camera); }

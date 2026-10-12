@@ -26,10 +26,20 @@ let api = null;
 let live = false, line = 0, startedAt = 0, clockTimer = 0, capTimer = 0, checkTimers = [];
 
 // ---------- the key's renderer ----------
+// The 3D key needs a GPU. Automated browsers (crawlers, Lighthouse) and software renderers get the CSS key, which looks
+// the same at rest and costs a fraction of the CPU. ?gl forces WebGL anyway (the end-to-end tests), ?nogl the CSS key.
 function hasWebGL() {
   if (params.has("nogl")) return false;
-  try { const c = document.createElement("canvas"); return !!(window.WebGLRenderingContext && (c.getContext("webgl2") || c.getContext("webgl"))); }
-  catch { return false; }
+  try {
+    const c = document.createElement("canvas");
+    const gl = window.WebGLRenderingContext && (c.getContext("webgl2") || c.getContext("webgl"));
+    if (!gl) return false;
+    if (params.has("gl")) return true;
+    if (navigator.webdriver) return false;
+    const info = gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+    return !/swiftshader|llvmpipe|softpipe|software/i.test(renderer);
+  } catch { return false; }
 }
 
 function cssKey() {
@@ -109,7 +119,6 @@ function toggle() {
   live = !live;
   root.classList.toggle("is-live", live);
   rec.setAttribute("aria-pressed", String(live));
-  rec.setAttribute("aria-label", live ? "Record key, a demo: press to stop." : "Record key, a demo: press to go live. Nothing is recorded.");
   $("hint-main").textContent = live ? "Press to stop" : "Press to record again";
   $("cue-a").textContent = live ? "You're" : "That's";
   $("cue-b").textContent = live ? "on air." : "a wrap.";

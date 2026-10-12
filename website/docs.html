@@ -3,16 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tattle docs · How to use the Mac app</title>
+<title>Tattle for Mac docs: setup, fact-checking, troubleshooting</title>
 <meta name="description" content="How to use Tattle, the free Mac app for live transcripts and fact-checks: install, keys, a live show, speakers, the timeline, label sets, Chat, and recordings.">
 <link rel="canonical" href="https://hey-tattle.com/docs">
+<meta name="robots" content="max-image-preview:large">
 <meta name="theme-color" content="#0a1628">
 <meta name="author" content="Nicolas Dao">
 <link rel="author" href="https://nicolasdao.com">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Tattle">
 <meta property="og:url" content="https://hey-tattle.com/docs">
-<meta property="og:title" content="Tattle docs: how to use the Mac app">
+<meta property="og:title" content="Tattle for Mac docs: how to use the app">
 <meta property="og:description" content="Every feature of Tattle, the open-source Mac app that transcribes live conversations, maps them on a timeline, and fact-checks claims as they're said.">
 <meta property="og:image" content="https://hey-tattle.com/og.jpg">
 <meta property="og:image:type" content="image/jpeg">
@@ -43,13 +44,30 @@
       "description": "Every feature of Tattle, the open-source Mac app that transcribes live conversations, maps them on a timeline, and fact-checks claims as they're said.",
       "url": "https://hey-tattle.com/docs",
       "image": "https://hey-tattle.com/og.jpg",
+      "mainEntityOfPage": "https://hey-tattle.com/docs",
+      "isPartOf": { "@id": "https://hey-tattle.com/#website" },
       "inLanguage": "en",
+      "datePublished": "2026-09-30",
+      "dateModified": "2026-10-12",
       "about": { "@id": "https://hey-tattle.com/#app" },
-      "author": { "@type": "Person", "name": "Nicolas Dao", "url": "https://nicolasdao.com" },
-      "publisher": { "@type": "Organization", "name": "Cloudless Labs", "url": "https://cloudlesslabs.com" }
+      "author": { "@id": "https://nicolasdao.com/#nicolas-dao" },
+      "publisher": { "@id": "https://cloudlesslabs.com#org" }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://nicolasdao.com/#nicolas-dao",
+      "name": "Nicolas Dao",
+      "url": "https://nicolasdao.com/"
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://cloudlesslabs.com#org",
+      "name": "Cloudless Labs",
+      "url": "https://cloudlesslabs.com"
     },
     {
       "@type": "BreadcrumbList",
+      "@id": "https://hey-tattle.com/docs#breadcrumb",
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "Tattle", "item": "https://hey-tattle.com/" },
         { "@type": "ListItem", "position": 2, "name": "Docs", "item": "https://hey-tattle.com/docs" }
@@ -91,6 +109,7 @@
       <div class="strap"><span class="eyebrow">The manual · every feature</span><h1 class="name">How to use Tattle</h1></div>
     </div>
     <p class="dlede">Tattle listens to your calls. It <b>transcribes</b> them as people speak, <b>maps</b> the conversation on a timeline, and <b>fact-checks</b> claims as they're said. This page covers everything it does, from the first launch to the last export.</p>
+    <p class="dmeta">Last updated <time datetime="2026-10-12">12 Oct 2026</time> · Tattle for Mac is not affiliated with Tattle Civic Tech (tattle.co.in) or other apps named Tattle.</p>
     <div class="dhead-row">
       <a class="ca-download" data-when="mac" data-download href="https://github.com/nicolasdao/tattle/releases/latest">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12M6 10l6 6 6-6M4 21h16"/></svg>
@@ -106,52 +125,53 @@
     <summary>On this page</summary>
     <ol>
       <li class="toc-g">Get started</li>
-      <li><a href="#start"><em>01</em>Quick start</a></li>
-      <li><a href="#install"><em>02</em>Install</a></li>
-      <li><a href="#keys"><em>03</em>Keys and accounts</a></li>
-      <li><a href="#transcription"><em>04</em>Transcription engines</a></li>
+      <li><a href="#start"><em>01</em> Quick start</a></li>
+      <li><a href="#install"><em>02</em> Install</a></li>
+      <li><a href="#keys"><em>03</em> Keys and accounts</a></li>
+      <li><a href="#transcription"><em>04</em> Transcription engines</a></li>
       <li class="toc-g">On air</li>
-      <li><a href="#session"><em>05</em>Going live</a></li>
-      <li><a href="#header"><em>06</em>The header</a></li>
-      <li><a href="#transcript"><em>07</em>The transcript</a></li>
-      <li><a href="#speakers"><em>08</em>Speakers</a></li>
-      <li><a href="#timeline"><em>09</em>The timeline</a></li>
-      <li><a href="#fact-checking"><em>10</em>Fact-checking</a></li>
-      <li><a href="#thinking"><em>11</em>Fast · slow thinking</a></li>
-      <li><a href="#jev-log"><em>12</em>Jev log</a></li>
-      <li><a href="#insights"><em>13</em>Insights</a></li>
+      <li><a href="#session"><em>05</em> Going live</a></li>
+      <li><a href="#header"><em>06</em> The header</a></li>
+      <li><a href="#transcript"><em>07</em> The transcript</a></li>
+      <li><a href="#speakers"><em>08</em> Speakers</a></li>
+      <li><a href="#timeline"><em>09</em> The timeline</a></li>
+      <li><a href="#fact-checking"><em>10</em> Fact-checking</a></li>
+      <li><a href="#thinking"><em>11</em> Fast · slow thinking</a></li>
+      <li><a href="#jev-log"><em>12</em> Jev log</a></li>
+      <li><a href="#insights"><em>13</em> Insights</a></li>
       <li class="toc-g">Make it yours</li>
-      <li><a href="#label-sets"><em>14</em>Label sets</a></li>
-      <li><a href="#chat"><em>15</em>Chat</a></li>
+      <li><a href="#label-sets"><em>14</em> Label sets</a></li>
+      <li><a href="#chat"><em>15</em> Chat</a></li>
       <li class="toc-g">After the show</li>
-      <li><a href="#recordings"><em>16</em>Recordings</a></li>
-      <li><a href="#playback"><em>17</em>Playback</a></li>
-      <li><a href="#export-import"><em>18</em>Export and import</a></li>
+      <li><a href="#recordings"><em>16</em> Recordings</a></li>
+      <li><a href="#playback"><em>17</em> Playback</a></li>
+      <li><a href="#export-import"><em>18</em> Export and import</a></li>
       <li class="toc-g">Reference</li>
-      <li><a href="#costs"><em>19</em>Costs</a></li>
-      <li><a href="#privacy"><em>20</em>Privacy</a></li>
-      <li><a href="#files"><em>21</em>Where files live</a></li>
-      <li><a href="#updates"><em>22</em>Updates</a></li>
-      <li><a href="#menus"><em>23</em>Menu bar</a></li>
-      <li><a href="#shortcuts"><em>24</em>Keyboard shortcuts</a></li>
-      <li><a href="#links"><em>25</em>Links into the app</a></li>
+      <li><a href="#costs"><em>19</em> Costs</a></li>
+      <li><a href="#privacy"><em>20</em> Privacy</a></li>
+      <li><a href="#files"><em>21</em> Where files live</a></li>
+      <li><a href="#updates"><em>22</em> Updates</a></li>
+      <li><a href="#menus"><em>23</em> Menu bar</a></li>
+      <li><a href="#shortcuts"><em>24</em> Keyboard shortcuts</a></li>
+      <li><a href="#links"><em>25</em> Links into the app</a></li>
       <li class="toc-g">Good to know</li>
-      <li><a href="#show-checklist"><em>26</em>Before a show</a></li>
-      <li><a href="#troubleshooting"><em>27</em>Troubleshooting</a></li>
-      <li><a href="#limits"><em>28</em>Limits</a></li>
-      <li><a href="#developers"><em>29</em>Run it from source</a></li>
-      <li><a href="#help"><em>30</em>Help and licence</a></li>
+      <li><a href="#show-checklist"><em>26</em> Before a show</a></li>
+      <li><a href="#troubleshooting"><em>27</em> Troubleshooting</a></li>
+      <li><a href="#limits"><em>28</em> Limits</a></li>
+      <li><a href="#developers"><em>29</em> Run it from source</a></li>
+      <li><a href="#help"><em>30</em> Help and licence</a></li>
     </ol>
   </details>
+  <script>/* fold the contents on a phone before the first paint, so the page never jumps (docs.js keeps it in step) */ document.getElementById("toc").open = !matchMedia("(max-width: 899px)").matches;</script>
 
   <main class="read">
 
     <!-- ===================================================== 01 -->
     <section id="start">
-      <h2><em>01</em><span>Quick start</span></h2>
+      <h2><em>01</em> <span>Quick start</span></h2>
       <p class="lead">Tattle is a Mac app. It hears two sides of a conversation: your microphone, and the call your Mac plays. It works with any call app, because it listens to the Mac's own audio.</p>
       <div class="tbl"><table>
-        <thead><tr><th>You need</th><th>Details</th></tr></thead>
+        <thead><tr><th scope="col">You need</th><th scope="col">Details</th></tr></thead>
         <tbody>
           <tr><td>A Mac with Apple Silicon</td><td>M1 or later. Intel Macs are not supported.</td></tr>
           <tr><td>macOS 14.2 or later</td><td>macOS 26 or later transcribes on the Mac itself, for free. macOS 14.2 to 25 transcribes with OpenAI.</td></tr>
@@ -171,7 +191,7 @@
 
     <!-- ===================================================== 02 -->
     <section id="install">
-      <h2><em>02</em><span>Install</span></h2>
+      <h2><em>02</em> <span>Install</span></h2>
       <ol class="steps">
         <li>Download <code>Tattle-&lt;version&gt;-arm64.dmg</code> from <a href="https://github.com/nicolasdao/tattle/releases/latest">GitHub Releases</a>, the only official source.</li>
         <li>Open the DMG and drag <strong>Tattle</strong> into Applications.</li>
@@ -202,10 +222,10 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 03 -->
     <section id="keys">
-      <h2><em>03</em><span>Keys and accounts</span></h2>
+      <h2><em>03</em> <span>Keys and accounts</span></h2>
       <p>Tattle has no account and no server of its own. Paid features use your own keys with two services, paid directly by you, only for what you use.</p>
       <div class="tbl"><table>
-        <thead><tr><th>Key</th><th>What needs it</th><th>Where to get it</th></tr></thead>
+        <thead><tr><th scope="col">Key</th><th scope="col">What needs it</th><th scope="col">Where to get it</th></tr></thead>
         <tbody>
           <tr><td>None</td><td>Transcripts on macOS 26 or later (Apple Speech), speakers, the timeline's segments, recordings, playback, export and import</td><td>—</td></tr>
           <tr><td>OpenAI</td><td>Transcription on macOS 14.2 to 25, or when you pick the OpenAI engine</td><td><a href="https://platform.openai.com">platform.openai.com</a>, with prepaid credit. Keys start with <code>sk-</code></td></tr>
@@ -247,17 +267,17 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 04 -->
     <section id="transcription">
-      <h2><em>04</em><span>Transcription engines</span></h2>
+      <h2><em>04</em> <span>Transcription engines</span></h2>
       <p>Two engines turn speech into text. Choose one in the cog menu (top right) → <span class="ui">Transcription</span>.</p>
       <div class="tbl"><table>
-        <thead><tr><th></th><th>On this Mac (Apple Speech)</th><th>OpenAI</th></tr></thead>
+        <thead><tr><td></td><th scope="col">On this Mac (Apple Speech)</th><th scope="col">OpenAI</th></tr></thead>
         <tbody>
-          <tr><td>Needs</td><td>macOS 26 or later</td><td>An OpenAI key with credit</td></tr>
-          <tr><td>Cost</td><td>Free</td><td>About $1.23 an hour of show</td></tr>
-          <tr><td>Privacy</td><td>Audio never leaves your Mac</td><td>Audio is sent to OpenAI during a session</td></tr>
-          <tr><td>Accuracy</td><td>Less accurate on names and jargon ("Jev" can come out as "Jeff")</td><td>More accurate on names and jargon</td></tr>
-          <tr><td>Live text</td><td>About 2 s after speech starts; the final line about 1 s after it ends</td><td>About 1.2 s after speech starts; the final line about 2.5 s after it ends</td></tr>
-          <tr><td>Offline</td><td>Yes, once its speech model has downloaded, for a transcript-only session</td><td>No</td></tr>
+          <tr><th scope="row">Needs</th><td>macOS 26 or later</td><td>An OpenAI key with credit</td></tr>
+          <tr><th scope="row">Cost</th><td>Free</td><td>About $1.23 an hour of show</td></tr>
+          <tr><th scope="row">Privacy</th><td>Audio never leaves your Mac</td><td>Audio is sent to OpenAI during a session</td></tr>
+          <tr><th scope="row">Accuracy</th><td>Less accurate on names and jargon ("Jev" can come out as "Jeff")</td><td>More accurate on names and jargon</td></tr>
+          <tr><th scope="row">Live text</th><td>About 2 s after speech starts; the final line about 1 s after it ends</td><td>About 1.2 s after speech starts; the final line about 2.5 s after it ends</td></tr>
+          <tr><th scope="row">Offline</th><td>Yes, once its speech model has downloaded, for a transcript-only session</td><td>No</td></tr>
         </tbody>
       </table></div>
       <p>The first time, Tattle picks for you: Apple Speech on macOS 26 or later, OpenAI on older macOS (or if you already had an OpenAI key from an earlier version). The choice is saved and applies to the next session: a session keeps the engine it started with, and the window is read-only while one is on air ("A session is on air: the engine can be changed when it ends.").</p>
@@ -269,10 +289,10 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 05 -->
     <section id="session">
-      <h2><em>05</em><span>Going live</span></h2>
+      <h2><em>05</em> <span>Going live</span></h2>
       <p>Press <span class="ui">Start live</span> in the header. The window, <span class="ui">Choose what runs during this show</span>, has:</p>
       <div class="tbl"><table>
-        <thead><tr><th>Option</th><th>What it does</th></tr></thead>
+        <thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
         <tbody>
           <tr><td>Microphone</td><td>Your mic. <span class="ui">Built-in microphone</span>, then every other input with its connection (USB, Bluetooth…). Plugged in after launch? It is listed next time the window opens. The last one used is preselected.</td></tr>
           <tr><td>People on the call</td><td><span class="ui">Any number</span>, or <span class="ui">1 on the call</span> to <span class="ui">4 on the call</span>. Voices beyond this count go to the closest speaker instead of becoming new ones. It resets to Any number each time. Your mic always counts one voice.</td></tr>
@@ -300,9 +320,9 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 06 -->
     <section id="header">
-      <h2><em>06</em><span>The header</span></h2>
+      <h2><em>06</em> <span>The header</span></h2>
       <div class="tbl"><table>
-        <thead><tr><th>Part</th><th>What it shows</th></tr></thead>
+        <thead><tr><th scope="col">Part</th><th scope="col">What it shows</th></tr></thead>
         <tbody>
           <tr><td>The ON AIR block</td><td><span class="ui">On air</span> (red), <span class="ui">Paused</span> (orange), <span class="ui">Replay</span> (cyan), or <span class="ui">Stopping</span>. Hidden when nothing is running.</td></tr>
           <tr><td>Session name</td><td><span class="ui">No session</span>, or the session's name. Click it to rename (120 characters at most); Enter or clicking away saves, Esc cancels. Works on air and on recordings.</td></tr>
@@ -328,7 +348,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 07 -->
     <section id="transcript">
-      <h2><em>07</em><span>The transcript</span></h2>
+      <h2><em>07</em> <span>The transcript</span></h2>
       <p>Each line shows its time, the speaker's name tab (once per run of lines by the same speaker; your mic in light blue, the call in pink), and the text. It scrolls with the conversation while you are near the bottom.</p>
       <ul>
         <li><strong>Live text</strong> (grey italic, with a red dot) streams while someone speaks; the final line replaces it. Its speaker reads <span class="ui">Host</span> or <span class="ui">Call</span>, or the name when that stream has had only one speaker so far.</li>
@@ -338,14 +358,14 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
         <li><strong>Segment dividers</strong> mark where the timeline's segments start: the time, the first category's option as a coloured tag (faded when Jev was unsure), marker icons, and companies mentioned.</li>
       </ul>
       <h3 id="failed-lines">Lines that could not be transcribed</h3>
-      <p>If the connection drops, a line keeps its place and reads <span class="ui">Not transcribed yet: the connection dropped. Retrying…</span>. Tattle retries every 15 s and once more at the end. A line that still fails reads <span class="ui">Not transcribed.</span> (on a recording, <span class="ui">Not transcribed. Play from here to hear it.</span>): the audio is kept.</p>
+      <p>If the connection drops, a line keeps its place and reads <span class="ui long">Not transcribed yet: the connection dropped. Retrying…</span>. Tattle retries every 15 s and once more at the end. A line that still fails reads <span class="ui">Not transcribed.</span> (on a recording, <span class="ui">Not transcribed. Play from here to hear it.</span>): the audio is kept.</p>
       <h3 id="filters">Filters</h3>
       <p>Under the transcript, a chip per marker (Hot take, Prediction…) and, on the right, <span class="ui">All speakers</span> and one menu per category (<span class="ui">All subjects</span>, <span class="ui">All modes</span>; grouped options such as <span class="ui">AI (all)</span>), then <span class="ui">Clear</span>. The speaker filter hides other speakers' lines; the marker and category filters hide lines outside matching segments and dim those segments on the timeline. Live text is hidden while a marker or category filter is on. Filters reset when the label set changes.</p>
     </section>
 
     <!-- ===================================================== 08 -->
     <section id="speakers">
-      <h2><em>08</em><span>Speakers</span></h2>
+      <h2><em>08</em> <span>Speakers</span></h2>
       <p>Each voice becomes a speaker, <span class="ui">Speaker 1</span>, <span class="ui">Speaker 2</span>…, from a voiceprint made on your Mac (lines of 1.5 s or more). Voices are compared only within their own stream: your mic holds one voice, the call as many as <span class="ui">People on the call</span> allows. Once a stream is at its limit, a new voice goes to the closest speaker. Renames and merges work on air, after the show, and on reopened recordings, and are saved with the recording.</p>
       <h3 id="rename-merge">Rename or merge one speaker</h3>
       <p>Click a name in the transcript. The window shows their lines, talk time, and stream (<span class="ui">on your mic</span> or <span class="ui">the call</span>):</p>
@@ -363,10 +383,10 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 09 -->
     <section id="timeline">
-      <h2><em>09</em><span>The timeline</span></h2>
+      <h2><em>09</em> <span>The timeline</span></h2>
       <p>The conversation is cut into <strong>segments</strong> of 12 to 75 seconds, where the topic changes. With labels on, Jev labels each segment with the label set's questions when it closes. The lanes, top to bottom (with the built-in <span class="ui">AI podcast</span> set):</p>
       <div class="tbl"><table>
-        <thead><tr><th>Lane</th><th>What it shows</th></tr></thead>
+        <thead><tr><th scope="col">Lane</th><th scope="col">What it shows</th></tr></thead>
         <tbody>
           <tr><td>Section brackets</td><td>Runs of segments with the same first-category option.</td></tr>
           <tr><td>First category</td><td>A coloured block per segment, e.g. <strong>Subject</strong>: AI models, AI tools, AI industry, Tech, Marketing, Personal life, Other topics, The show.</td></tr>
@@ -376,7 +396,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
           <tr><td>Time axis</td><td>With a <span class="ui">Now</span> line on air, <span class="ui">End</span> on a recording.</td></tr>
         </tbody>
       </table></div>
-      <p>With labels off, a single <span class="ui">Segments</span> lane replaces the categories, and the legend reads <span class="ui">Labels off for this session: segments and time only</span>. The segment still being spoken is drawn as <span class="ui">In progress</span>. A faded block means Jev was less sure than the set's threshold; an outline means it is not labelled (yet).</p>
+      <p>With labels off, a single <span class="ui">Segments</span> lane replaces the categories, and the legend reads <span class="ui long">Labels off for this session: segments and time only</span>. The segment still being spoken is drawn as <span class="ui">In progress</span>. A faded block means Jev was less sure than the set's threshold; an outline means it is not labelled (yet).</p>
       <ul>
         <li><strong>Hover</strong> a block or pin for its time, option, confidence, story, and companies mentioned.</li>
         <li><strong>Click</strong> one to jump the transcript there (and, on a recording, move playback to it). A segment hidden by filters says so.</li>
@@ -388,12 +408,12 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 10 -->
     <section id="fact-checking">
-      <h2><em>10</em><span>Fact-checking</span></h2>
+      <h2><em>10</em> <span>Fact-checking</span></h2>
       <div class="needs"><span class="chip key">OpenRouter key</span><span class="chip cost">Up to about $0.35 an hour</span></div>
       <p>Fact-checking works in two steps, like fast and slow thinking. <strong>System 1</strong> is Jev, a fast decision model from TypeSafe AI: on every line it answers a few typed questions (is it a checkable claim, about the public world, worth checking, is the speaker unsure) in under a second. <strong>System 2</strong> is GPT-6 Luna with web search: it researches only the claims System 1 flags, and returns a verdict with sources within seconds.</p>
       <h3 id="verdicts">The verdicts</h3>
       <div class="tbl"><table>
-        <thead><tr><th>Verdict</th><th>Meaning</th></tr></thead>
+        <thead><tr><th scope="col">Verdict</th><th scope="col">Meaning</th></tr></thead>
         <tbody>
           <tr><td><span class="vd good">Supported</span></td><td>The sources back the claim.</td></tr>
           <tr><td><span class="vd bad">False</span></td><td>The sources contradict it. A short correction follows.</td></tr>
@@ -422,7 +442,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 11 -->
     <section id="thinking">
-      <h2><em>11</em><span>Fast · slow thinking</span></h2>
+      <h2><em>11</em> <span>Fast · slow thinking</span></h2>
       <p>The right column's second tab shows the two systems at work: <span class="ui">System 1 · fast</span> (Jev, "Judges every line in under a second") and <span class="ui">System 2 · slow</span> (GPT-6 Luna, "Researches only what System 1 flags"), each <span class="ui">Thinking</span> or <span class="ui">Idle</span>, with its calls, average time, cost per call, and total.</p>
       <ul>
         <li><strong>The value box</strong>: how much cheaper System 1 made the show ("N× cheaper with System 1"), against asking System 2 about every line.</li>
@@ -433,13 +453,13 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 12 -->
     <section id="jev-log">
-      <h2><em>12</em><span>Jev log</span></h2>
+      <h2><em>12</em> <span>Jev log</span></h2>
       <p>The third tab lists every call to Jev, newest first (the latest 200 on screen): the time, the purpose (<span class="ui">Line check</span>, <span class="ui">Topic labels</span>, <span class="ui">Rewrite test</span>, <span class="ui">Relabel</span>), what Jev was shown, the latency, the cost, its key answers ("Yes (93%)", "Analysis (81% sure)", "2.3 of 4"), and what the app did next (<span class="ui">→ Flagged: sent to System 2</span>, <span class="ui">→ Already checked</span>, <span class="ui">→ Not flagged</span>, <span class="ui">→ No answer in time</span>). Click a call for every answer and the exact HTTP request and response.</p>
     </section>
 
     <!-- ===================================================== 13 -->
     <section id="insights">
-      <h2><em>13</em><span>Insights</span></h2>
+      <h2><em>13</em> <span>Insights</span></h2>
       <p>Cog → <span class="ui">Insights</span>, updated every minute and at the end of the show. Three tabs:</p>
       <ul>
         <li><strong>Overview</strong>: the label set's index as a big percentage (with the built-in set, <strong>Off-topic</strong>: time on personal life and other topics), a bar per category, a table per speaker (talk time, per-speaker markers such as Disagreements, score averages), and lists of listed markers (Predictions, Recommendations, Clip-worthy), each entry jumping to its moment.</li>
@@ -450,11 +470,11 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 14 -->
     <section id="label-sets">
-      <h2><em>14</em><span>Label sets</span></h2>
+      <h2><em>14</em> <span>Label sets</span></h2>
       <div class="needs"><span class="chip free">Making one: free</span><span class="chip key">Using one: OpenRouter key</span></div>
       <p>A label set is what the timeline asks Jev about each segment of a show. Pick one in <span class="ui">Start live</span>. Sets are files on your Mac: making or editing one sends nothing anywhere.</p>
       <div class="tbl"><table>
-        <thead><tr><th>Kind</th><th>How many</th><th>What it does</th></tr></thead>
+        <thead><tr><th scope="col">Kind</th><th scope="col">How many</th><th scope="col">What it does</th></tr></thead>
         <tbody>
           <tr><td>Categories</td><td>0 to 2</td><td>Jev picks one option per segment (2 to 255 options, each with a name, a description Jev reads, a colour, an optional group). One option must be a fallback, named Other or None. Each draws a lane and a filter; the first draws the section brackets. One category may have an <strong>index</strong>: the share of time on chosen options, shown in Insights.</td></tr>
           <tr><td>Scores</td><td>0 to 2</td><td>Exactly 5 levels, lowest first, drawn as a 0–4 line (the first in the heat colour, the second in the hype colour) and averaged per speaker.</td></tr>
@@ -487,12 +507,12 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 15 -->
     <section id="chat">
-      <h2><em>15</em><span>Chat</span></h2>
+      <h2><em>15</em> <span>Chat</span></h2>
       <div class="needs"><span class="chip key">OpenRouter key</span><span class="chip cost">About $0.004 a question with GPT-6 Luna on a 2-hour show</span></div>
       <p>Ask questions about the transcript of the show on screen, live or afterwards. Open it with <span class="ui">Chat</span> in the header or <kbd>⌘K</kbd> from anywhere.</p>
       <ul>
         <li>The transcript is attached. On air, each question also brings every line said since the last one, so answers cover the show up to the moment you ask.</li>
-        <li>Starters: <span class="ui">Summarise the conversation so far.</span>, <span class="ui">What were the main disagreements, and who took which side?</span>, and more.</li>
+        <li>Starters: <span class="ui">Summarise the conversation so far.</span>, <span class="ui long">What were the main disagreements, and who took which side?</span>, and more.</li>
         <li>Answers cite moments as <code>[m:ss]</code>: click one to jump there (on a recording, playback moves there and the chat stays open).</li>
         <li>Chats are kept per recording, in a sidebar: <span class="ui">+ New chat</span>, rename, delete. A chat is created only with its first question, so opening Chat costs nothing.</li>
         <li><strong>Stop</strong> a reply with the <span class="ui">Stop</span> button or <kbd>Esc</kbd>; it keeps what was written. <span class="ui">Copy</span> any message, <span class="ui">Edit</span> your last question (or <kbd>↑</kbd> in an empty box), <span class="ui">Regenerate</span> the last answer.</li>
@@ -502,7 +522,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
       <h3 id="chat-models">Models</h3>
       <p>Click the model button to pick one. Search by name, and sort by <span class="ui">Suggested</span>, <span class="ui">Cheapest</span>, <span class="ui">Priciest</span>, or <span class="ui">Largest context</span>; the list shows each model's context and prices per million tokens, from OpenRouter. Switching mid-chat sends the whole conversation to the new model with the next question.</p>
       <div class="tbl"><table>
-        <thead><tr><th>Model</th><th>OpenRouter id</th></tr></thead>
+        <thead><tr><th scope="col">Model</th><th scope="col">OpenRouter id</th></tr></thead>
         <tbody>
           <tr><td>GPT-6 Luna (default)</td><td><code>openai/gpt-6-luna</code></td></tr>
           <tr><td>GPT-6 Sol</td><td><code>openai/gpt-6-sol</code></td></tr>
@@ -525,7 +545,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 16 -->
     <section id="recordings">
-      <h2><em>16</em><span>Recordings</span></h2>
+      <h2><em>16</em> <span>Recordings</span></h2>
       <p>Every show is saved as a recording. Cog → <span class="ui">Recordings</span> lists them newest first, each with its name (or date), duration, lines, speakers, claims, cost, and the version that recorded it. Badges: <span class="ui">Viewing</span>, <span class="ui">Current</span>, <span class="ui">Incomplete</span> (it stopped abruptly), <span class="ui">Imported</span>, <span class="ui">No audio</span>.</p>
       <ul>
         <li><strong>Open</strong>: click a row. The recording reopens exactly as it was, instantly and for free: nothing is processed again. You can still rename and merge speakers, and chat about it.</li>
@@ -542,7 +562,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 17 -->
     <section id="playback">
-      <h2><em>17</em><span>Playback</span></h2>
+      <h2><em>17</em> <span>Playback</span></h2>
       <p>A recording with audio has a player in the timeline's header: <span class="ui">Play</span> / <span class="ui">Pause</span> (or <kbd>Space</kbd>), speed (1×, 1.25×, 1.5×, 2×, 3×, 4×; voices keep their pitch), a volume boost up to 300%, and the time. Your mic and the call play mixed, each levelled to the same loudness.</p>
       <ul>
         <li>Move playback by clicking the timeline, a segment, a marker pin, a line's time in the transcript, or a time cited in Chat.</li>
@@ -553,10 +573,10 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 18 -->
     <section id="export-import">
-      <h2><em>18</em><span>Export and import</span></h2>
+      <h2><em>18</em> <span>Export and import</span></h2>
       <p><span class="ui">Export</span> (in the header, or on a row in Recordings) saves a recording as one <code>.tattle</code> file in Downloads, to send by WhatsApp, email, or a cloud drive.</p>
       <div class="tbl"><table>
-        <thead><tr><th>Audio</th><th>What you get</th><th>A two-hour show</th></tr></thead>
+        <thead><tr><th scope="col">Audio</th><th scope="col">What you get</th><th scope="col">A two-hour show</th></tr></thead>
         <tbody>
           <tr><td>Compressed audio (default)</td><td>Sounds the same for speech; the best way to share.</td><td>About 57 MB</td></tr>
           <tr><td>Original audio</td><td>Exactly as recorded, lossless.</td><td>About 450 MB</td></tr>
@@ -570,10 +590,10 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 19 -->
     <section id="costs">
-      <h2><em>19</em><span>Costs</span></h2>
+      <h2><em>19</em> <span>Costs</span></h2>
       <p>Tattle itself is free. Paid calls go to your own accounts, and the header shows the spend as it happens.</p>
       <div class="tbl"><table>
-        <thead><tr><th>What</th><th>Cost</th></tr></thead>
+        <thead><tr><th scope="col">What</th><th scope="col">Cost</th></tr></thead>
         <tbody>
           <tr><td>Transcription, Apple Speech</td><td>Free</td></tr>
           <tr><td>Transcription, OpenAI</td><td>About $1.23 an hour of show</td></tr>
@@ -593,10 +613,10 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 20 -->
     <section id="privacy">
-      <h2><em>20</em><span>Privacy</span></h2>
+      <h2><em>20</em> <span>Privacy</span></h2>
       <p>No server of our own, no account, no analytics, no telemetry. Nothing goes to the authors. What leaves your Mac, and when:</p>
       <div class="tbl"><table>
-        <thead><tr><th>What</th><th>Sent to</th><th>When</th></tr></thead>
+        <thead><tr><th scope="col">What</th><th scope="col">Sent to</th><th scope="col">When</th></tr></thead>
         <tbody>
           <tr><td>The conversation's audio</td><td>OpenAI, with your key</td><td>Only with the OpenAI engine, during a session or replay, never while paused. With Apple Speech, audio never leaves your Mac.</td></tr>
           <tr><td>Transcript lines</td><td>OpenRouter, with your key</td><td>With fact-checking or labels on (Jev's questions, GPT-6 Luna's research and audits)</td></tr>
@@ -612,9 +632,9 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 21 -->
     <section id="files">
-      <h2><em>21</em><span>Where files live</span></h2>
+      <h2><em>21</em> <span>Where files live</span></h2>
       <div class="tbl"><table>
-        <thead><tr><th>What</th><th>Where</th></tr></thead>
+        <thead><tr><th scope="col">What</th><th scope="col">Where</th></tr></thead>
         <tbody>
           <tr><td>The app</td><td><code>/Applications/Tattle.app</code></td></tr>
           <tr><td>Recordings</td><td><code>~/Library/Application Support/Tattle/sessions/</code>, one folder per show of plain, readable files (File → Show Recordings in Finder)</td></tr>
@@ -629,7 +649,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 22 -->
     <section id="updates">
-      <h2><em>22</em><span>Updates</span></h2>
+      <h2><em>22</em> <span>Updates</span></h2>
       <p>Tattle updates itself from GitHub Releases. It checks at launch and every 4 hours, downloads a new version in the background (the Dock icon shows the progress), and when nothing is on air asks <span class="ui">Tattle X is ready</span>: <span class="ui">Restart Now</span>, or <span class="ui">Later</span> to install it the next time you quit. It never checks, and never asks, while a session is on air; a download already under way finishes in the background.</p>
       <p><span class="ui">Tattle → Check for Updates…</span> checks now (it reads <span class="ui">Checking for Updates…</span> while it works). You may see:</p>
       <ul>
@@ -643,9 +663,9 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 23 -->
     <section id="menus">
-      <h2><em>23</em><span>Menu bar</span></h2>
+      <h2><em>23</em> <span>Menu bar</span></h2>
       <div class="tbl"><table>
-        <thead><tr><th>Menu</th><th>Items</th></tr></thead>
+        <thead><tr><th scope="col">Menu</th><th scope="col">Items</th></tr></thead>
         <tbody>
           <tr><td>Tattle</td><td>About Tattle · Check for Updates… · Settings… (<kbd>⌘,</kbd>, the API keys) · Services · Hide Tattle (<kbd>⌘H</kbd>) · Hide Others · Show All · Quit Tattle (<kbd>⌘Q</kbd>)</td></tr>
           <tr><td>File</td><td>Show Recordings in Finder · Close Window (<kbd>⌘W</kbd>)</td></tr>
@@ -660,9 +680,9 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 24 -->
     <section id="shortcuts">
-      <h2><em>24</em><span>Keyboard shortcuts</span></h2>
+      <h2><em>24</em> <span>Keyboard shortcuts</span></h2>
       <div class="tbl"><table>
-        <thead><tr><th>Keys</th><th>Does</th></tr></thead>
+        <thead><tr><th scope="col">Keys</th><th scope="col">Does</th></tr></thead>
         <tbody>
           <tr><td><kbd>⌘K</kbd></td><td>Open Chat, from anywhere</td></tr>
           <tr><td><kbd>⌘,</kbd></td><td>Settings…: the API keys</td></tr>
@@ -683,10 +703,10 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 25 -->
     <section id="links">
-      <h2><em>25</em><span>Links into the app</span></h2>
+      <h2><em>25</em> <span>Links into the app</span></h2>
       <p>When you run Tattle from source in a browser (see <a href="#developers">Run it from source</a>), the address says where you are, so you can bookmark or share a view:</p>
       <div class="tbl"><table>
-        <thead><tr><th>Address</th><th>Opens</th></tr></thead>
+        <thead><tr><th scope="col">Address</th><th scope="col">Opens</th></tr></thead>
         <tbody>
           <tr><td><code>/recordings/&lt;id&gt;</code></td><td>That recording; add <code>?t=12:34</code> for a playback position</td></tr>
           <tr><td><code>?tab=thinking</code>, <code>?tab=jev-log</code></td><td>That right-column tab</td></tr>
@@ -697,7 +717,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 26 -->
     <section id="show-checklist">
-      <h2><em>26</em><span>Before a show</span></h2>
+      <h2><em>26</em> <span>Before a show</span></h2>
       <h3 id="day-before">The day before</h3>
       <ul>
         <li>Run a short rehearsal session: both meters move, and a line is transcribed.</li>
@@ -725,7 +745,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 27 -->
     <section id="troubleshooting">
-      <h2><em>27</em><span>Troubleshooting</span></h2>
+      <h2><em>27</em> <span>Troubleshooting</span></h2>
       <h3 id="ts-silence">A meter is red, or reads "silent"</h3>
       <ul>
         <li><strong>The call's meter</strong>: System Audio Recording is off for Tattle (System Settings → Privacy &amp; Security → System Audio Recording), or nothing is playing yet.</li>
@@ -762,7 +782,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 28 -->
     <section id="limits">
-      <h2><em>28</em><span>Limits</span></h2>
+      <h2><em>28</em> <span>Limits</span></h2>
       <ul>
         <li>Apple Silicon Macs only, macOS 14.2 or later; on-device transcription needs macOS 26.</li>
         <li>English only.</li>
@@ -781,7 +801,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
 
     <!-- ===================================================== 29 -->
     <section id="developers">
-      <h2><em>29</em><span>Run it from source</span></h2>
+      <h2><em>29</em> <span>Run it from source</span></h2>
       <p>Tattle is open source. To run it from the code you need Node 24, the Xcode command-line tools, and for on-device transcription the macOS 26 SDK. The permissions then belong to your terminal app, not to Tattle.</p>
 <pre><code>git clone https://github.com/nicolasdao/tattle.git &amp;&amp; cd tattle
 npm install
@@ -790,7 +810,7 @@ npm run build:capture &amp;&amp; npm run build:transcribe
 npm run serve            # http://127.0.0.1:4317</code></pre>
       <p>Keys can also go in a <code>.env</code> file (copy <code>.env.example</code>); they win over the saved ones.</p>
       <div class="tbl"><table>
-        <thead><tr><th>Command</th><th>Does</th><th>Cost</th></tr></thead>
+        <thead><tr><th scope="col">Command</th><th scope="col">Does</th><th scope="col">Cost</th></tr></thead>
         <tbody>
           <tr><td><code>npm run serve</code></td><td>The app in a browser at 127.0.0.1:4317 (<code>-- --replay &lt;dir&gt; --speed 1|max</code> replays a folder)</td><td>As a show</td></tr>
           <tr><td><code>npm run app</code></td><td>The Mac app from the source folder</td><td>As a show</td></tr>
@@ -809,7 +829,7 @@ npm run serve            # http://127.0.0.1:4317</code></pre>
 
     <!-- ===================================================== 30 -->
     <section id="help">
-      <h2><em>30</em><span>Help and licence</span></h2>
+      <h2><em>30</em> <span>Help and licence</span></h2>
       <ul>
         <li><strong>Questions and problems</strong>: Help → Tattle on GitHub, or <a href="https://github.com/nicolasdao/tattle">github.com/nicolasdao/tattle</a>. Include your version (Tattle → About Tattle).</li>
         <li><strong>Security issues</strong>: report them privately, as <a href="https://github.com/nicolasdao/tattle/blob/master/SECURITY.md">SECURITY.md</a> describes, never in public.</li>

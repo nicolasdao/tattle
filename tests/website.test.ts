@@ -201,7 +201,11 @@ describe("the docs page, /docs", () => {
   it("loads only the site's own files, which exist, and no inline script the CSP would block", () => {
     for (const [, src] of docs.matchAll(/(?:src|href)="(assets\/[^"]+)"/g)) expect(existsSync(path(`website/${src}`)), src).toBe(true);
     const scripts = [...docs.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)];
-    for (const [, attrs, body] of scripts) if (body!.trim()) expect(attrs).toContain('type="application/ld+json"');
+    const csp = read("website/_headers").match(/Content-Security-Policy: (.*)/)![1]!;
+    for (const [, attrs, body] of scripts) {
+      if (!body!.trim() || attrs!.includes('type="application/ld+json"')) continue;
+      expect(csp, "an inline script the CSP allows by its hash").toContain(`'sha256-${createHash("sha256").update(body!).digest("base64")}'`);
+    }
     expect(docs).toContain('data-download href="https://github.com/nicolasdao/tattle/releases/latest"');
   });
 });
@@ -236,7 +240,8 @@ describe("who made it", () => {
     expect(meta("name", "twitter:site")).toBe("@realnicdao");
     expect(meta("name", "twitter:creator")).toBe("@realnicdao");
     const app = jsonLd().find((n) => n["@type"] === "SoftwareApplication")!;
-    expect(app.author.sameAs).toEqual(expect.arrayContaining([YOUTUBE, X]));
+    const author = jsonLd().find((n) => n["@id"] === app.author["@id"])!;
+    expect(author.sameAs).toEqual(expect.arrayContaining([YOUTUBE, X]));
   });
 });
 
@@ -253,5 +258,147 @@ describe("what a change to the page must not break", () => {
     const hash = `'sha256-${createHash("sha256").update(map).digest("base64")}'`;
     const csp = read("website/_headers").match(/Content-Security-Policy: (.*)/)![1]!;
     expect(csp).toContain(hash);
+  });
+});
+
+describe("search: the SEO pass of 12 October 2026", () => {
+  const PERSON = "https://nicolasdao.com/#nicolas-dao"; // the @id nicolasdao.com publishes
+  const ORG = "https://cloudlesslabs.com#org"; // the @id cloudlesslabs.com publishes
+  const docs = read("website/docs.html");
+  const docsHead = docs.slice(0, docs.indexOf("</head>"));
+  const title = (h: string) => h.match(/<title>([^<]*)<\/title>/)![1]!;
+  const graph = (html: string): Record<string, any>[] =>
+    [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap((m) => JSON.parse(m[1]!)["@graph"]);
+  const textOf = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+  const docIds = new Set([...docs.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]));
+  const sitemap = read("website/sitemap.xml");
+
+  it("calls the product Tattle for Mac in both titles and link previews, so it stands apart from other Tattles", () => {
+    expect(title(head)).toBe("Tattle for Mac: free live transcription and fact-checking");
+    expect(title(docsHead)).toBe("Tattle for Mac docs: setup, fact-checking, troubleshooting");
+    expect(meta("property", "og:title")).toMatch(/^Tattle for Mac\b/);
+    expect(docsHead).toMatch(/<meta property="og:title" content="Tattle for Mac\b/);
+  });
+
+  it("says what Tattle for Mac is in one plain sentence under the hero's heading, and the docs say whose it is not", () => {
+    const hero = page.match(/<header class="hero"[\s\S]*?<\/header>/)![0];
+    expect(textOf(hero)).toContain("Tattle for Mac is a free, open-source app that transcribes your calls and podcasts live");
+    expect(textOf(docs)).toContain("Tattle for Mac is not affiliated with Tattle Civic Tech (tattle.co.in) or other apps named Tattle.");
+  });
+
+  it("states the limits near the download button: Apple Silicon, English, and the fact-checking key and its cost", () => {
+    const dl = textOf(page.match(/<div class="dl" data-when="mac">[\s\S]*?<\/div>/)![0]);
+    expect(dl).toContain("Apple Silicon");
+    expect(dl).toContain("English");
+    expect(dl).toMatch(/OpenRouter key/);
+    expect(dl).toContain("$0.35"); // the docs' figure: "Up to about $0.35 an hour"
+    expect(textOf(docs)).toContain("Up to about $0.35 an hour");
+  });
+
+  it("lets search engines show large image previews of both pages", () => {
+    for (const h of [head, docsHead]) expect(h).toContain('<meta name="robots" content="max-image-preview:large">');
+  });
+
+  it("names each section of the landing page in its heading, not only with a metaphor", () => {
+    const heads = [...page.matchAll(/<section class="sect" id="([^"]+)"[\s\S]*?<h2[^>]*>([\s\S]*?)<\/h2>/g)];
+    expect(heads.length).toBeGreaterThanOrEqual(6);
+    for (const [, id, h2] of heads) {
+      expect(h2, id).toMatch(/<span class="eyebrow">[^<]+<\/span>/); // the descriptive line is part of the heading
+      expect(textOf(h2!).trim().split(" ").length, id).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  it("links each landing-page section to the part of the docs that explains it", () => {
+    for (const id of ["rundown", "jev", "systems", "labels", "preshow"]) {
+      const sect = page.match(new RegExp(`<section class="sect" id="${id}"[\\s\\S]*?</section>`))![0];
+      const deep = [...sect.matchAll(/href="\/docs#([^"]+)"/g)].map((m) => m[1]!);
+      expect(deep.length, id).toBeGreaterThan(0);
+      for (const anchor of deep) expect(docIds.has(anchor), `${id} → /docs#${anchor}`).toBe(true);
+    }
+  });
+
+  it("ties the app, the docs, the author and the publisher to the @ids their own sites publish", () => {
+    const home = graph(page);
+    const app = home.find((n) => n["@type"] === "SoftwareApplication")!;
+    expect(app["@id"]).toBe(`${SITE}/#app`);
+    expect(app.author).toEqual({ "@id": PERSON });
+    expect(app.publisher).toEqual({ "@id": ORG });
+    const person = home.find((n) => n["@id"] === PERSON)!;
+    expect(person).toMatchObject({ "@type": "Person", name: "Nicolas Dao" });
+    expect(person.sameAs).toContain("https://github.com/nicolasdao");
+    expect(JSON.stringify(home)).not.toContain("linkedin"); // unverified: never list a profile nobody confirmed
+    expect(home.find((n) => n["@id"] === ORG)).toMatchObject({ "@type": "Organization", name: "Cloudless Labs" });
+    expect(home.some((n) => n["@id"] === "https://cloudlesslabs.com/#organization")).toBe(false);
+
+    const article = graph(docs).find((n) => n["@type"] === "TechArticle")!;
+    expect(article).toMatchObject({ author: { "@id": PERSON }, publisher: { "@id": ORG }, about: { "@id": `${SITE}/#app` } });
+    for (const id of [PERSON, ORG]) expect(graph(docs).some((n) => n["@id"] === id), id).toBe(true);
+  });
+
+  it("gives the app's markup the version, size and release notes the page shows", () => {
+    const app = graph(page).find((n) => n["@type"] === "SoftwareApplication")!;
+    expect(`v${app.softwareVersion}`).toBe(page.match(/<span data-version>([^<]*)</)![1]);
+    expect(app.fileSize).toBe(page.match(/<span data-size>([^<]*)</)![1]);
+    expect(app.releaseNotes).toBe(page.match(/data-notes href="([^"]*)"/)![1]);
+    expect(app.downloadUrl).toBe(page.match(/data-download href="([^"]*)"/)![1]);
+  });
+
+  it("dates the docs, visibly and in the markup, and the sitemap gives each page its last change", () => {
+    const article = graph(docs).find((n) => n["@type"] === "TechArticle")!;
+    expect(article.datePublished).toBe("2026-09-30");
+    const shown = docs.match(/Last updated <time datetime="(\d{4}-\d{2}-\d{2})">/)?.[1];
+    expect(shown).toBeDefined();
+    expect(article.dateModified).toBe(shown);
+    expect(article.dateModified >= article.datePublished).toBe(true);
+    const urls = [...sitemap.matchAll(/<url><loc>([^<]*)<\/loc><lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod><\/url>/g)].map((m) => [m[1], m[2]]);
+    expect(urls.map((u) => u[0])).toEqual([`${SITE}/`, `${SITE}/docs`]);
+    expect(Object.fromEntries(urls)[`${SITE}/docs`]).toBe(article.dateModified);
+  });
+
+  it("moves the pages' other addresses permanently (301), not temporarily", () => {
+    const rules = read("website/_redirects").split("\n").filter((l) => l.trim() && !l.startsWith("#")).map((l) => l.trim().split(/\s+/));
+    expect(rules).toEqual(expect.arrayContaining([["/index.html", "/", "301"], ["/docs.html", "/docs", "301"], ["/docs/", "/docs", "301"]]));
+    expect(ignored("website/_redirects")).toBe(false);
+  });
+
+  it("has an llms.txt with plain facts and links that land, kept out of the sitemap", () => {
+    const llms = read("website/llms.txt");
+    expect(llms).toMatch(/^# Tattle for Mac\n\n> .+\n/);
+    const urls = [...llms.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map((m) => m[1]!);
+    expect(urls.length).toBeGreaterThan(8);
+    for (const url of urls) {
+      expect(url, url).toMatch(/^https:\/\/(hey-tattle\.com|github\.com\/nicolasdao\/tattle)\b/);
+      const anchor = url.match(/^https:\/\/hey-tattle\.com\/docs#(.+)$/)?.[1];
+      if (anchor) expect(docIds.has(anchor), url).toBe(true);
+    }
+    expect(llms).toContain(`${SITE}/docs.md`);
+    expect(ignored("website/llms.txt")).toBe(false);
+    expect(sitemap).not.toContain("llms.txt");
+  });
+
+  it("serves the docs as Markdown at /docs.md, generated from docs.html so it never drifts", async () => {
+    const { docsToMarkdown } = await import("../scripts/make-docs-md.mjs");
+    expect(read("website/docs.md")).toBe(docsToMarkdown(docs));
+    expect(ignored("website/docs.md")).toBe(false);
+    expect(read("website/_headers")).toMatch(/^\/docs\.md\n\s+Content-Type: text\/markdown; charset=utf-8$/m);
+    // the Markdown copy points search engines at the page, so the two never compete
+    expect(read("website/_headers")).toMatch(/^\/docs\.md\n(\s+.+\n)*\s+Link: <https:\/\/hey-tattle\.com\/docs>; rel="canonical"$/m);
+    const md = read("website/docs.md");
+    expect(md).toMatch(/^# How to use Tattle\n/);
+    for (const label of ["Supported", "False", "Misleading"]) expect(md).toContain(label);
+    expect(md).toContain("Needs: OpenRouter key · Up to about $0.35 an hour");
+    expect(md.replace(/```[\s\S]*?```/g, "").replace(/`[^`]*`/g, "")).not.toMatch(/<[a-z][^>]*>/); // no HTML left over, outside code
+  });
+
+  it("keeps a space between each docs section's number and its name, so they read as two words", () => {
+    const h2s = [...docs.matchAll(/<h2>([\s\S]*?)<\/h2>/g)].map((m) => m[1]!.replace(/<[^>]+>/g, "")); // the text as a crawler joins it
+    expect(h2s.length).toBeGreaterThan(25);
+    for (const h of h2s) expect(h, h).toMatch(/^\s*\d{2} \S/);
+    for (const [, a] of docs.matchAll(/<a href="#[^"]+">(<em>\d{2}<\/em>[^<]*)<\/a>/g)) expect(a, a).toMatch(/<\/em> \S/);
+  });
+
+  it("gives every docs table its header cells, and the footer links a 24 px target", () => {
+    for (const [table] of docs.matchAll(/<table>[\s\S]*?<\/table>/g)) expect(table).toMatch(/<th scope="(col|row)">/);
+    expect(read("website/assets/style.css")).toMatch(/\.fine-links a \{[^}]*min-height: 24px/);
   });
 });

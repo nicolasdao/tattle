@@ -11,5 +11,6 @@ export default defineConfig({
   projects: [
     { name: "web", testDir: "e2e/web", use: { browserName: "chromium" } },
     { name: "electron", testDir: "e2e/electron" },
+    { name: "website", testDir: "e2e/website", use: { browserName: "chromium" } },
   ],
 });

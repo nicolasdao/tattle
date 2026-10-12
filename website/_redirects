@@ -1,0 +1,4 @@
+# Permanent (301) moves for the pages' other addresses. Without these, Cloudflare's static assets answer 307.
+/index.html /     301
+/docs.html  /docs 301
+/docs/      /docs 301

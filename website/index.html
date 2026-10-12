@@ -3,16 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tattle · Live transcription and fact-checking for Mac</title>
+<title>Tattle for Mac: free live transcription and fact-checking</title>
 <meta name="description" content="Tattle is a free, open-source Mac app that transcribes calls and podcasts live, maps the conversation on a timeline, and fact-checks claims as they're said.">
 <link rel="canonical" href="https://hey-tattle.com/">
+<meta name="robots" content="max-image-preview:large">
 <meta name="theme-color" content="#0a1628">
 <meta name="author" content="Nicolas Dao">
 <link rel="author" href="https://nicolasdao.com">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tattle">
 <meta property="og:url" content="https://hey-tattle.com/">
-<meta property="og:title" content="Tattle: live transcripts and fact-checks for your Mac">
+<meta property="og:title" content="Tattle for Mac: live transcripts and fact-checks">
 <meta property="og:description" content="An open-source Mac app that transcribes live conversations on your Mac, free and private on macOS 26, maps them on a timeline, and fact-checks claims as they're said.">
 <meta property="og:image" content="https://hey-tattle.com/og.jpg">
 <meta property="og:image:type" content="image/jpeg">
@@ -39,21 +40,44 @@
       "@type": "WebSite",
       "@id": "https://hey-tattle.com/#website",
       "name": "Tattle",
-      "alternateName": "Tattle for Mac",
+      "alternateName": ["Tattle for Mac", "hey-tattle.com"],
       "url": "https://hey-tattle.com/",
       "inLanguage": "en",
-      "publisher": { "@id": "https://cloudlesslabs.com/#organization" }
+      "publisher": { "@id": "https://cloudlesslabs.com#org" }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://hey-tattle.com/#webpage",
+      "url": "https://hey-tattle.com/",
+      "name": "Tattle for Mac: free live transcription and fact-checking",
+      "isPartOf": { "@id": "https://hey-tattle.com/#website" },
+      "about": { "@id": "https://hey-tattle.com/#app" },
+      "mainEntity": { "@id": "https://hey-tattle.com/#app" },
+      "primaryImageOfPage": { "@id": "https://hey-tattle.com/#ogimage" },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "ImageObject",
+      "@id": "https://hey-tattle.com/#ogimage",
+      "url": "https://hey-tattle.com/og.jpg",
+      "contentUrl": "https://hey-tattle.com/og.jpg",
+      "width": 1200,
+      "height": 630,
+      "caption": "Tattle, the open-source Mac app: its red record key, with the line Press record, every claim gets checked, and a lower third marking the claim Bats are blind as Contradicted."
     },
     {
       "@type": "SoftwareApplication",
       "@id": "https://hey-tattle.com/#app",
       "name": "Tattle",
+      "alternateName": "Tattle for Mac",
       "url": "https://hey-tattle.com/",
       "description": "An open-source Mac app that transcribes live conversations on your Mac, free and private on macOS 26, maps them on a timeline, and fact-checks claims as they're said.",
       "image": "https://hey-tattle.com/og.jpg",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "macOS 14.2 or later (Apple Silicon)",
       "softwareVersion": "1.0.2",
+      "fileSize": "153 MB",
+      "releaseNotes": "https://github.com/nicolasdao/tattle/releases/tag/v1.0.2",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
       "isAccessibleForFree": true,
       "license": "https://opensource.org/license/bsd-3-clause",
@@ -68,15 +92,27 @@
         "Chat about the transcript, live or afterwards",
         "A recordings library with playback at up to 4x and export"
       ],
-      "author": { "@type": "Person", "name": "Nicolas Dao", "url": "https://nicolasdao.com", "sameAs": ["https://www.youtube.com/@nicolasdao", "https://x.com/realnicdao"], "jobTitle": "Cloud & AI engineer", "worksFor": { "@id": "https://cloudlesslabs.com/#organization" } },
-      "publisher": { "@id": "https://cloudlesslabs.com/#organization" }
+      "author": { "@id": "https://nicolasdao.com/#nicolas-dao" },
+      "publisher": { "@id": "https://cloudlesslabs.com#org" },
+      "copyrightHolder": { "@id": "https://cloudlesslabs.com#org" },
+      "copyrightYear": 2026
+    },
+    {
+      "@type": "Person",
+      "@id": "https://nicolasdao.com/#nicolas-dao",
+      "name": "Nicolas Dao",
+      "url": "https://nicolasdao.com/",
+      "jobTitle": "Cloud & AI engineer",
+      "sameAs": ["https://github.com/nicolasdao", "https://www.youtube.com/@nicolasdao", "https://x.com/realnicdao"],
+      "worksFor": { "@id": "https://cloudlesslabs.com#org" }
     },
     {
       "@type": "Organization",
-      "@id": "https://cloudlesslabs.com/#organization",
+      "@id": "https://cloudlesslabs.com#org",
       "name": "Cloudless Labs",
       "legalName": "Cloudless Consulting Pty Ltd",
-      "url": "https://cloudlesslabs.com"
+      "url": "https://cloudlesslabs.com",
+      "founder": { "@id": "https://nicolasdao.com/#nicolas-dao" }
     }
   ]
 }
@@ -136,7 +172,7 @@
       <div class="ck-unit"><div class="ck-housing"></div><div class="ck-cap"><i></i></div></div>
     </div>
     <div class="caps" id="caps" aria-hidden="true"></div>
-    <button class="rec-hit" id="rec" type="button" aria-pressed="false" aria-label="Record key, a demo: press to go live. Nothing is recorded.">
+    <button class="rec-hit" id="rec" type="button" aria-pressed="false">
       <span class="hint" id="hint"><b id="hint-main">Press to record</b><span>Or press Space · a demo, nothing is recorded</span></span>
     </button>
     <div class="lower" id="lower" aria-live="polite"></div>
@@ -144,6 +180,7 @@
 
   <div class="hero-copy">
     <h1 class="lede">Tattle listens to your calls. It transcribes them as people speak, maps the conversation on a timeline, and <b>fact-checks claims as they're said.</b></h1>
+    <p class="intro">Tattle for Mac is a free, open-source app that transcribes your calls and podcasts live and uses AI to fact-check claims as they're said.</p>
 
     <div class="dl" data-when="mac">
       <a class="ca-download big" data-download href="https://github.com/nicolasdao/tattle/releases/download/v1.0.2/Tattle-1.0.2-arm64.dmg">
@@ -151,6 +188,7 @@
         Download for Mac
       </a>
       <p class="ca-meta">Apple Silicon · macOS 14.2 or later · Free and open source · Free, private transcripts on macOS 26<span class="ver"> · <span data-version>v1.0.2</span> · <span data-size>153 MB</span></span></p>
+      <p class="ca-meta">English only · Fact-checks use your OpenRouter key, up to about $0.35/h</p>
     </div>
     <div class="dl-other" data-when="other">
       <p class="other-title">It's a Mac app.</p>
@@ -176,7 +214,7 @@
   <section class="sect" id="rundown" aria-labelledby="rundown-title">
     <div class="sect-head">
       <span class="tag tag-accent">Rundown</span>
-      <div class="strap"><span class="eyebrow">What happens after you press record</span><h2 class="name" id="rundown-title">Tonight's show</h2></div>
+      <div class="strap"><h2 class="strap-h" id="rundown-title"><span class="eyebrow">What happens after you press record</span> <span class="name">Tonight's show</span></h2></div>
     </div>
 
     <ol class="rundown">
@@ -231,7 +269,7 @@
         <article class="card on"><p class="big">Private</p><p>The audio of your calls is transcribed on your Mac, and it never leaves your Mac.</p></article>
         <article class="card on"><p class="big">Offline</p><p>A transcript-only show needs no internet at all, once the speech model has downloaded the first time.</p></article>
       </div>
-      <p class="onmac-note">Needs macOS 26 or later: older Macs transcribe with OpenAI, using your own key. Fact-checking, labels and Chat use the internet.</p>
+      <p class="onmac-note">Needs macOS 26 or later: older Macs transcribe with OpenAI, using your own key. Fact-checking, labels and Chat use the internet. <a href="/docs#transcription">How transcription works</a></p>
     </div>
   </section>
 
@@ -239,7 +277,7 @@
   <section class="sect" id="jev" aria-labelledby="jev-title">
     <div class="sect-head">
       <span class="tag tag-accent">Jev</span>
-      <div class="strap"><span class="eyebrow">The secret ingredient · by TypeSafe AI</span><h2 class="name" id="jev-title">Judgment, commoditized</h2></div>
+      <div class="strap"><h2 class="strap-h" id="jev-title"><span class="eyebrow">The secret ingredient · by TypeSafe AI</span> <span class="name">Judgment, commoditized</span></h2></div>
     </div>
 
     <div class="jev-intro">
@@ -275,7 +313,7 @@
         </div>
       </div>
       <div class="jc-out" id="jc-out" aria-live="polite"></div>
-      <p class="jc-note">Example answers. The questions are the ones Tattle asks; the <a href="https://github.com/nicolasdao/tattle/blob/master/config/factcheck.s1.default.json">full wording is on GitHub</a>.</p>
+      <p class="jc-note">Example answers. The questions are the ones Tattle asks; the <a href="https://github.com/nicolasdao/tattle/blob/master/config/factcheck.s1.default.json">full wording is on GitHub</a>, and the app's <a href="/docs#jev-log">Jev log</a> shows every call.</p>
     </div>
 
     <div class="jev-origin">
@@ -293,7 +331,7 @@
   <section class="sect" id="systems" aria-labelledby="systems-title">
     <div class="sect-head">
       <span class="tag tag-live">Thinking</span>
-      <div class="strap"><span class="eyebrow">How the fact-checker thinks</span><h2 class="name" id="systems-title">Fast and slow</h2></div>
+      <div class="strap"><h2 class="strap-h" id="systems-title"><span class="eyebrow">How the fact-checker thinks</span> <span class="name">Fast and slow</span></h2></div>
     </div>
 
     <p class="sys-intro">The psychologist Daniel Kahneman described two ways of thinking. <b>System 1</b> is fast and automatic, and it's always on. <b>System 2</b> is slow and deliberate, and it's called in only when something needs a closer look. Tattle's fact-checker works the same way.</p>
@@ -351,14 +389,14 @@
       <article><p class="teach-k">Criteria</p><p>After false alarms or missed claims, System 2 rewrites System 1's questions. A rewrite goes live only if replaying past lines shows it fixes the errors and keeps at least 90% of the good flags.</p></article>
       <article><p class="teach-k">Attention</p><p>System 2 can add up to three questions that raise the priority of the kinds of claims that turned out to matter. Every five minutes it also audits the lines that weren't flagged, looking for misses.</p></article>
     </div>
-    <p class="sys-foot">On the timeline, <b>you are System 2</b>: labels have no right or wrong answer to learn from, so the label set is yours. An AI can <a href="#labels">draft one with you</a>, but only you save it, and no LLM changes it on its own. <a href="https://github.com/nicolasdao/tattle/blob/master/docs/system1-system2.md">Read the full design</a></p>
+    <p class="sys-foot">On the timeline, <b>you are System 2</b>: labels have no right or wrong answer to learn from, so the label set is yours. An AI can <a href="#labels">draft one with you</a>, but only you save it, and no LLM changes it on its own. <a href="/docs#fact-checking">Fact-checking in the app</a> · <a href="https://github.com/nicolasdao/tattle/blob/master/docs/system1-system2.md">Read the full design</a></p>
   </section>
 
   <!-- 4. Label sets: what the timeline asks Jev, made your own, with an AI that interviews you. -->
   <section class="sect" id="labels" aria-labelledby="labels-title">
     <div class="sect-head">
       <span class="tag tag-accent">Labels</span>
-      <div class="strap"><span class="eyebrow">Make the timeline yours</span><h2 class="name" id="labels-title">Your labels</h2></div>
+      <div class="strap"><h2 class="strap-h" id="labels-title"><span class="eyebrow">Make the timeline yours</span> <span class="name">Your labels</span></h2></div>
     </div>
 
     <p class="sys-intro">The timeline is what Jev is asked about every stretch of your conversation. Those questions are a <b>label set</b>, and it doesn't have to be about AI podcasts. Write one for a sales call, a team meeting, a job interview or a cooking show, pick it when you start, and the timeline, the filters and the stats all follow it.</p>
@@ -407,14 +445,14 @@
       <article><p class="teach-k">Share it</p><p>Every set is a small file on your Mac. Export it as a <code>.tattle-labels</code> file, send it, and anyone with Tattle can import it. Making and sharing sets needs no account.</p></article>
       <article><p class="teach-k">Kept with the show</p><p>Each recording keeps a copy of the set it was made with, so editing a set later never changes a past show. Asking a set costs about a cent an hour of Jev.</p></article>
     </div>
-    <p class="sys-foot">Try it and Create with AI use your OpenRouter key, like fact-checking. <a href="https://github.com/nicolasdao/tattle/blob/master/docs/jev.md#the-timeline-questions-per-segment-label-sets">How label sets work</a></p>
+    <p class="sys-foot">Try it and Create with AI use your OpenRouter key, like fact-checking. <a href="/docs#label-sets">How label sets work</a></p>
   </section>
 
   <!-- 5. The cue card: keys, cost, privacy, trust. -->
   <section class="sect" id="preshow" aria-labelledby="preshow-title">
     <div class="sect-head">
       <span class="tag tag-warn">Pre-show</span>
-      <div class="strap"><span class="eyebrow">The cue card</span><h2 class="name" id="preshow-title">Before you go live</h2></div>
+      <div class="strap"><h2 class="strap-h" id="preshow-title"><span class="eyebrow">The cue card</span> <span class="name">Before you go live</span></h2></div>
     </div>
     <div class="cards">
       <article class="card"><p class="big">0 <small>keys</small></p><p>On macOS 26 or later, Tattle transcribes on your Mac and needs no account. Fact-checking and labels use your own OpenRouter account, with prepaid credit, and on older macOS transcription uses your OpenAI account. The app walks you through each when you need it.</p></article>
@@ -422,13 +460,14 @@
       <article class="card"><p class="big">0 <small>servers</small></p><p>Tattle has no server of its own, no account and no analytics. On macOS 26 or later your audio never leaves your Mac; text goes to OpenRouter, with your key, only when fact-checking, labels, or Chat are on. Recordings and keys stay on your Mac.</p></article>
       <article class="card"><p class="big">Signed</p><p>It's signed and notarized by Apple, and it updates itself, but never during a show.</p></article>
     </div>
+    <p class="sys-foot">Every key, cost and setting is in the docs: <a href="/docs#keys">keys</a>, <a href="/docs#costs">costs</a>, <a href="/docs#privacy">privacy</a>, and a <a href="/docs#show-checklist">checklist for show day</a>.</p>
   </section>
 
   <!-- 6. The credits: who made it. -->
   <section class="sect" id="credits" aria-labelledby="credits-title">
     <div class="sect-head">
       <span class="tag tag-paper">Credits</span>
-      <div class="strap"><span class="eyebrow">Who's behind the show</span><h2 class="name" id="credits-title">Made by</h2></div>
+      <div class="strap"><h2 class="strap-h" id="credits-title"><span class="eyebrow">Who's behind the show</span> <span class="name">Made by</span></h2></div>
     </div>
     <div class="credits">
       <article class="credit">

@@ -34,29 +34,34 @@
   }
 
   // ---------- the playhead and the section ticks ----------
+  // Every layout read happens before the first write, so the browser lays the page out once, not once per tick.
   function placeTicks() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const barH = bar.offsetHeight, scrollY = window.scrollY;
+    const tops = sections.filter(Boolean).map((sec) => sec.getBoundingClientRect().top + scrollY - barH);
     track.querySelectorAll("b").forEach((b) => b.remove());
-    const max = document.documentElement.scrollHeight - window.innerHeight;
     if (max <= 0) return;
-    const barH = bar.offsetHeight;
-    sections.forEach((sec) => {
-      if (!sec) return;
-      const y = Math.min(1, Math.max(0, (sec.getBoundingClientRect().top + window.scrollY - barH) / max));
+    track.append(...tops.map((top) => {
       const b = document.createElement("b");
-      b.style.left = `${(y * 100).toFixed(2)}%`;
-      track.append(b);
-    });
+      b.style.left = `${(Math.min(1, Math.max(0, top / max)) * 100).toFixed(2)}%`;
+      return b;
+    }));
   }
-  function progress() {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    fill.style.transform = `scaleX(${max > 0 ? Math.min(1, window.scrollY / max) : 0})`;
+  function progress(max, y) {
+    fill.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
   }
 
   let queued = false;
   function onScroll() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(() => { queued = false; progress(); pick(); bar.classList.toggle("scrolled", window.scrollY > 8); });
+    requestAnimationFrame(() => {
+      queued = false;
+      const max = document.documentElement.scrollHeight - window.innerHeight, y = window.scrollY; // reads first,
+      pick();                                                                                       // then pick's own read,
+      progress(max, y);                                                                             // then only writes
+      bar.classList.toggle("scrolled", y > 8);
+    });
   }
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", () => { placeTicks(); onScroll(); });
