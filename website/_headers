@@ -1,8 +1,8 @@
 # Security headers for every page and file on hey-tattle.com (Cloudflare Workers static assets reads this file at deploy).
 # The CSP allows scripts only from this site (three.js is vendored in /assets/vendor/ by scripts/vendor-three.mjs), plus
-# Cloudflare Web Analytics (its beacon script, and the visit it reports), the import map and the docs' contents fold by their hashes: after editing that <script type="importmap"> block, recompute its sha256 (see docs/website.md).
+# Cloudflare Web Analytics (its beacon script, and the visit it reports), the platform check on both pages, the import map, and the docs' contents fold by their hashes: after editing that <script type="importmap"> block, recompute its sha256 (see docs/website.md).
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com 'sha256-y+EmYSXdNgfVqTwHoApozY5J2ecnBArNRQKTd2aRRms=' 'sha256-2TVaoaFmA2fuabDxm6xA/jE47GjdRi3jdWCF8doMXIM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.github.com https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com 'sha256-lwhPfeNREIfku8JlX4GGYzOgpV4nEUsMg0WqoZ1B6KU=' 'sha256-y+EmYSXdNgfVqTwHoApozY5J2ecnBArNRQKTd2aRRms=' 'sha256-2TVaoaFmA2fuabDxm6xA/jE47GjdRi3jdWCF8doMXIM='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.github.com https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

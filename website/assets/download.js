@@ -9,7 +9,10 @@
 //   <button data-copy-link>Copy link</button>     -> copies the page's URL, says "Copied"
 //
 // Every [data-download] link points at the latest release page at first, then at the DMG itself once
-// GitHub's API names it. The DMG's file name carries the version, so it cannot be a fixed URL.
+// GitHub's API names it. The DMG's file name carries the version, so it cannot be a fixed URL. hey-tattle.com's pages
+// already name the latest release in their HTML (the release writes it), so the API only catches a newer one: it is
+// asked at most once an hour per visitor (localStorage), and never by automated browsers (crawlers, Lighthouse), which
+// share IPs and would spend GitHub's 60-an-hour unauthenticated limit, then log its 403 as a console error.
 //
 // Script API: window.CA = { repo, releasesUrl, isMac, reducedMotion, release (null until loaded), ready(cb) }
 // A click on a download link also dispatches `ca:download` on window (detail: { url, el }) before navigating,
@@ -56,9 +59,14 @@
     load();
   }
 
+  const KEY = "ca.release.v3", HOUR = 3600e3;
   async function load() {
     let release = null;
-    try { release = JSON.parse(sessionStorage.getItem("ca.release.v2") || "null"); } catch { /* storage blocked */ }
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (saved && Date.now() - saved.at < HOUR) release = saved.release;
+    } catch { /* storage blocked */ }
+    if (!release && navigator.webdriver) return; // the HTML's release stands
     if (!release) {
       try {
         const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { Accept: "application/vnd.github+json" } });
@@ -69,7 +77,7 @@
         const date = (data.published_at || "").slice(0, 10);
         const released = date ? new Date(`${date}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "";
         release = { version: data.tag_name, url: dmg.browser_download_url, size: `${Math.round(dmg.size / 1e6)} MB`, date, released, notes: data.html_url };
-        try { sessionStorage.setItem("ca.release.v2", JSON.stringify(release)); } catch { /* storage blocked */ }
+        try { localStorage.setItem(KEY, JSON.stringify({ at: Date.now(), release })); } catch { /* storage blocked */ }
       } catch { return; } // offline or rate-limited: the links keep pointing at the release page
     }
     CA.release = release;

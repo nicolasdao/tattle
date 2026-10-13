@@ -29,14 +29,14 @@ html, body.docs-page { overflow-x: clip; }
 .toc summary { list-style: none; cursor: pointer; font: 800 14px/1 var(--cond); letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); padding: 4px 0 14px; }
 .toc summary::-webkit-details-marker { display: none; }
 .toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
-.toc .toc-g { margin: 14px 0 4px 11px; font: 800 12px/1 var(--cond); letter-spacing: 0.18em; text-transform: uppercase; color: var(--live); }
+.toc .toc-g { margin: 14px 0 4px 11px; font: 800 12px/1 var(--cond); letter-spacing: 0.18em; text-transform: uppercase; color: var(--live-ink); }
 .toc .toc-g:first-child { margin-top: 0; }
 .toc a { display: grid; grid-template-columns: 26px 1fr; gap: 6px; padding: 7px 10px 7px 8px; border-left: 3px solid transparent; text-decoration: none;
   font: 700 14px/1.25 var(--cond); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .toc a em { font-style: normal; color: var(--mute); font-weight: 800; }
 .toc a:hover { color: var(--ink); background: var(--deck); }
 .toc a[aria-current] { color: var(--ink); border-left-color: var(--live); background: var(--deck); }
-.toc a[aria-current] em { color: var(--live); }
+.toc a[aria-current] em { color: var(--live-ink); }
 
 .read { min-width: 0; max-width: 800px; }
 .read > section { scroll-margin-top: calc(var(--bar-h) + 20px); padding-bottom: 28px; margin-bottom: 44px; border-bottom: 1px solid var(--rule); }
@@ -74,7 +74,7 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font: 700 0.8
 .chip.key { color: var(--paper-ink); background: var(--hype); }
 .chip.mac { color: var(--paper-ink); background: var(--accent); }
 .chip.cost { color: var(--paper-ink); background: var(--warn); }
-.chip.free { color: #fff; background: var(--good); }
+.chip.free { color: var(--ground); background: var(--good); }
 
 /* notes: a lower third's left edge */
 .note { margin: 0 0 18px; padding: 14px 18px 14px 16px; background: var(--deck); border-left: 4px solid var(--accent); }
@@ -83,7 +83,7 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font: 700 0.8
 .note.live { border-left-color: var(--live); }
 .note-t { display: block; margin-bottom: 6px; font: 800 13px/1 var(--cond); letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
 .note.warn .note-t { color: var(--warn); }
-.note.live .note-t { color: var(--live); }
+.note.live .note-t { color: var(--live-ink); }
 
 /* tables */
 .tbl { margin: 0 0 20px; overflow-x: auto; }
@@ -98,7 +98,7 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font: 700 0.8
 /* verdict swatches, as the app's lower thirds */
 .vd { display: inline-block; font: 800 13px/1 var(--cond); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 14px 5px 8px; color: #fff;
   clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 100%, 0 100%); white-space: nowrap; }
-.vd.good { background: var(--good); } .vd.bad { background: var(--bad); } .vd.warn { background: var(--warn); color: var(--paper-ink); } .vd.neutral { background: var(--neutral); }
+.vd.good { background: var(--good); color: var(--ground); } .vd.bad { background: var(--bad); } .vd.warn { background: var(--warn); color: var(--paper-ink); } .vd.neutral { background: var(--neutral); }
 .vd.research { background: repeating-linear-gradient(135deg, var(--deck-3) 0 6px, var(--deck-2) 6px 12px); color: var(--accent); }
 
 /* numbered steps */

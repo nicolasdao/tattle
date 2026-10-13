@@ -11,6 +11,18 @@
 @font-face { font-family: "Barlow Condensed"; src: url("fonts/BarlowCondensed-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
 @font-face { font-family: "Barlow Condensed"; src: url("fonts/BarlowCondensed-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
 @font-face { font-family: "Barlow Condensed"; src: url("fonts/BarlowCondensed-800.woff2") format("woff2"); font-weight: 800; font-style: normal; font-display: swap; }
+/* Metric-matched fallbacks: Arial (or Liberation Sans, which shares its metrics) resized to Barlow's widths, so text wraps
+   the same before and after the web fonts arrive and the swap moves nothing (no layout shift). Numbers from each woff2
+   against Arial's metrics (size-adjust = average advance on a sample of the page's text; overrides = Barlow's hhea), and only for the characters
+   Barlow has (unicode-range), so the others still come from Arial at its own size. */
+@font-face { font-family: "Barlow Fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"); font-weight: 400; size-adjust: 96.61%; ascent-override: 103.51%; descent-override: 20.70%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
+@font-face { font-family: "Barlow Fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"); font-weight: 500; size-adjust: 97.61%; ascent-override: 102.44%; descent-override: 20.49%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
+@font-face { font-family: "Barlow Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"); font-weight: 600; size-adjust: 91.93%; ascent-override: 108.78%; descent-override: 21.76%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
+@font-face { font-family: "Barlow Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"); font-weight: 700; size-adjust: 92.94%; ascent-override: 107.59%; descent-override: 21.52%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
+@font-face { font-family: "Barlow Condensed Fallback"; src: local("Arial"), local("ArialMT"), local("Liberation Sans"); font-weight: 500; size-adjust: 67.37%; ascent-override: 148.42%; descent-override: 29.68%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
+@font-face { font-family: "Barlow Condensed Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"); font-weight: 600; size-adjust: 67.62%; ascent-override: 147.89%; descent-override: 29.58%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
+@font-face { font-family: "Barlow Condensed Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"); font-weight: 700; size-adjust: 69.18%; ascent-override: 144.54%; descent-override: 28.91%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
+@font-face { font-family: "Barlow Condensed Fallback"; src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"); font-weight: 800; size-adjust: 70.76%; ascent-override: 141.33%; descent-override: 28.27%; line-gap-override: 0.00%; unicode-range: U+20-7E, U+A0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+300-301, U+303-304, U+308-309, U+323, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2032-2033, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+2215; }
 
 :root {
   /* grounds and surfaces, darkest to lightest */
@@ -28,11 +40,12 @@
   --strap-eyebrow: #4a5d7a;
   /* signals */
   --accent: #2bd4f0;
-  --live: #e8263b;
+  --live: #e4223a;         /* white text on it: 4.58:1 (#e8263b, before 13 Oct 2026, was 4.40) */
+  --live-ink: #ec4d5e;     /* the red for small text on the navy grounds: 4.5:1 or more on --ground and --deck */
   --good: #1db86a;        /* verdict: supported */
-  --bad: #e8263b;         /* verdict: contradicted */
+  --bad: #e4223a;         /* verdict: contradicted */
   --warn: #f29422;        /* verdict: misleading; paused */
-  --neutral: #6a7d98;     /* verdict: unverifiable */
+  --neutral: #657893;     /* verdict: unverifiable */
   --host: #8cb4ff;        /* the host's microphone */
   --remote: #ff93c0;      /* the call */
   --heat: #ff6b3d;
@@ -47,8 +60,8 @@
   --m-news: #3e8ee0; --m-analysis: #9a7fe0; --m-personal-story: #d9679a; --m-explainer: #2fb39c;
   --m-banter: #d99a2b; --m-transition: #6a7d98;
   /* type */
-  --cond: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --cond: "Barlow Condensed", "Barlow Condensed Fallback", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Barlow", "Barlow Fallback", "Helvetica Neue", Arial, sans-serif;
   /* the broadcast slant: every strap's right edge is cut 14px */
   --slant: 14px;
   color-scheme: dark;

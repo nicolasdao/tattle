@@ -246,11 +246,30 @@ describe("who made it", () => {
 });
 
 describe("what a change to the page must not break", () => {
-  it("the release's update-website.sh still finds each field it rewrites, as many times as it expects", () => {
+  it("the release's update-website.sh still finds each field it rewrites, as many times as it expects, on both pages", () => {
     const script = read(".agents/skills/release-tattle/scripts/update-website.sh");
-    const edits = [...script.matchAll(/^\s*\[\/(.+)\/g, .+, (\d+)\],?$/gm)].map((m) => ({ re: new RegExp(m[1]!, "g"), want: Number(m[2]) }));
-    expect(edits.length).toBeGreaterThanOrEqual(10);
-    for (const { re, want } of edits) expect((page.match(re) ?? []).length, String(re)).toBe(want);
+    // the script lists its edits per page: `"website/<page>.html": [` then one `[/pattern/g, replacement, count],` per line
+    const blocks = [...script.matchAll(/^\s*"(website\/[a-z]+\.html)": \[\n([\s\S]*?)^\s*\],?$/gm)];
+    expect(blocks.map((b) => b[1])).toEqual(["website/index.html", "website/docs.html"]);
+    for (const [, file, body] of blocks) {
+      const html = read(file!);
+      const edits = [...body!.matchAll(/^\s*\[\/(.+)\/g, .+, (\d+)\],?$/gm)].map((m) => ({ re: new RegExp(m[1]!, "g"), want: Number(m[2]) }));
+      expect(edits.length, file).toBeGreaterThanOrEqual(file === "website/index.html" ? 10 : 1);
+      for (const { re, want } of edits) expect((html.match(re) ?? []).length, `${file}: ${re}`).toBe(want);
+    }
+  });
+
+  it("the docs name the latest release in their HTML from the first paint, as the landing page does, so it cannot shift the page", () => {
+    const docs = read("website/docs.html");
+    const shown = docs.match(/<span data-release> · <span data-version>(v[\d.]+)<\/span><\/span>/)?.[1];
+    expect(shown).toBe(page.match(/<span data-version>([^<]*)</)![1]);
+  });
+
+  it("the Content Security Policy allows every inline script on the landing page by its hash", () => {
+    const csp = read("website/_headers").match(/Content-Security-Policy: (.*)/)![1]!;
+    const inline = [...page.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].filter(([, attrs, body]) => body!.trim() && !attrs!.includes("ld+json"));
+    expect(inline.length).toBeGreaterThanOrEqual(2); // the platform check and the import map
+    for (const [, , body] of inline) expect(csp).toContain(`'sha256-${createHash("sha256").update(body!).digest("base64")}'`);
   });
 
   it("the Content Security Policy allows the page's import map by its hash, so the 3D key loads", () => {
@@ -395,6 +414,25 @@ describe("search: the SEO pass of 12 October 2026", () => {
     expect(h2s.length).toBeGreaterThan(25);
     for (const h of h2s) expect(h, h).toMatch(/^\s*\d{2} \S/);
     for (const [, a] of docs.matchAll(/<a href="#[^"]+">(<em>\d{2}<\/em>[^<]*)<\/a>/g)) expect(a, a).toMatch(/<\/em> \S/);
+  });
+
+  it("gives every web font a metric-matched fallback, so the swap when Barlow arrives moves nothing", () => {
+    const theme = read("website/assets/theme.css");
+    const faces = (fam: string) => [...theme.matchAll(new RegExp(`@font-face \\{ font-family: "${fam}";[^}]*font-weight: (\\d+); font-style: normal`, "g"))].map((m) => m[1]);
+    for (const fam of ["Barlow", "Barlow Condensed"]) {
+      expect(faces(fam).length, fam).toBeGreaterThan(3);
+      for (const w of faces(fam)) expect(theme, `${fam} ${w}`).toMatch(new RegExp(`font-family: "${fam} Fallback"; src: local\\("Arial[^;]*; font-weight: ${w}; size-adjust: [\\d.]+%`));
+    }
+    // only for the characters Barlow has: anything else (→, ⌘, ✓…) keeps coming from Arial at its own size, as before
+    const ranges = [...theme.matchAll(/Fallback";[^}]*unicode-range: ([^;]+);/g)].map((m) => m[1]);
+    expect(ranges.length).toBe(faces("Barlow").length + faces("Barlow Condensed").length);
+    const covers = (r: string, cp: number) => r!.split(", ").some((part) => {
+      const [a, b = a] = part.replace("U+", "").split("-").map((h) => parseInt(h, 16));
+      return cp >= a! && cp <= b!;
+    });
+    for (const r of ranges) { expect(covers(r!, 0x41), r).toBe(true); expect(covers(r!, 0x2192), r).toBe(false); } // "A" yes, "→" no
+    expect(theme).toMatch(/--cond: "Barlow Condensed", "Barlow Condensed Fallback",/);
+    expect(theme).toMatch(/--body: "Barlow", "Barlow Fallback",/);
   });
 
   it("gives every docs table its header cells, and the footer links a 24 px target", () => {

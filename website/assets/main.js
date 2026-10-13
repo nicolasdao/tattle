@@ -103,6 +103,7 @@ function placeHit() {
   if (!api) return;
   const k = api.keyRect();
   Object.assign(rec.style, { left: `${k.x}px`, top: `${k.y}px`, width: `${k.w}px`, height: `${k.h}px` });
+  rec.classList.add("placed"); // shown from here on: it never appears elsewhere and jumps (a layout shift)
 }
 
 // ---------- on air / off air ----------
