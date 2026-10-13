@@ -95,6 +95,11 @@
         "Chat about the transcript, live or afterwards",
         "A recordings library with playback at up to 4x and export"
       ],
+      "screenshot": [
+        { "@type": "ImageObject", "contentUrl": "https://hey-tattle.com/assets/screens/live-1600.webp", "url": "https://hey-tattle.com/assets/screens/live-1600.webp", "width": 1600, "height": 1004, "caption": "Tattle during a show: the transcript, two sourced fact-check verdicts, and the timeline of a two-hour podcast." },
+        { "@type": "ImageObject", "contentUrl": "https://hey-tattle.com/assets/screens/start-live-1120.webp", "url": "https://hey-tattle.com/assets/screens/start-live-1120.webp", "width": 1120, "height": 1348, "caption": "Start live: choose what runs during the show (transcript, fact-checking, labels) and what it costs." },
+        { "@type": "ImageObject", "contentUrl": "https://hey-tattle.com/assets/screens/insights-1600.webp", "url": "https://hey-tattle.com/assets/screens/insights-1600.webp", "width": 1600, "height": 1191, "caption": "Insights on a finished show: the off-topic index, talk time and disagreements per speaker, and the predictions and recommendations." }
+      ],
       "author": { "@id": "https://nicolasdao.com/#nicolas-dao" },
       "publisher": { "@id": "https://cloudlesslabs.com#org" },
       "copyrightHolder": { "@id": "https://cloudlesslabs.com#org" },
@@ -261,6 +266,15 @@
       </li>
     </ol>
     <!-- On-device transcription (Apple Speech): the claims must keep "transcript-only" and "once the model has downloaded" (docs/transcription.md). -->
+    <figure class="shot">
+      <picture>
+        <source type="image/avif" srcset="/assets/screens/live-800.avif 800w, /assets/screens/live-1600.avif 1600w, /assets/screens/live-2400.avif 2400w" sizes="(max-width: 1240px) calc(100vw - 32px), 1144px">
+        <source type="image/webp" srcset="/assets/screens/live-800.webp 800w, /assets/screens/live-1600.webp 1600w, /assets/screens/live-2400.webp 2400w" sizes="(max-width: 1240px) calc(100vw - 32px), 1144px">
+        <img src="/assets/screens/live-1600.webp" width="1600" height="1004" sizes="(max-width: 1240px) calc(100vw - 32px), 1144px" loading="lazy" decoding="async" alt="Tattle on a recording of the MadKoo podcast: the transcript with each line&#39;s speaker on the left, the fact-check tab on the right with a Supported verdict on the UN Security Council&#39;s 15 members and a False verdict on UN measures becoming international law, each with its sources, and the timeline of subjects, modes, heat and hype, and markers across the two-hour show.">
+      </picture>
+      <figcaption>The real app, two hours into a MadKoo episode: the transcript, two sourced verdicts, and the whole show on the timeline.</figcaption>
+    </figure>
+
     <div class="onmac" aria-labelledby="onmac-title">
       <h3 class="onmac-title" id="onmac-title">Your Mac does the listening</h3>
       <p class="onmac-lede">On macOS 26 or later, Tattle transcribes with the speech recognition built into your Mac. Nothing to sign up for.</p>

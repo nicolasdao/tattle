@@ -21,6 +21,7 @@ source:
   - .agents/skills/release-tattle/scripts/deploy-website.sh
   - e2e/website/**
   - website/og.jpg
+  - website/assets/screens/**
   - website/favicon.*
   - website/apple-touch-icon.png
   - scripts/make-site-images.mjs
@@ -41,6 +42,7 @@ Tattle's official website is **https://hey-tattle.com**. It is one page whose jo
 | `wrangler.jsonc` | The Cloudflare Worker's configuration |
 | `_headers` | Security headers for every response (see [Security](#security)) |
 | `.assetsignore` | Files in `website/` that are never uploaded: the config files, `experiments/`, `.wrangler/` (`docs.md` is served) |
+| `assets/screens/` | Real screenshots of the Mac app (see [App screenshots](#app-screenshots)) |
 | `og.jpg` | The link-preview image (`og:image`), 1200×630 (see [Search and link previews](#search-and-link-previews)) |
 | `favicon.ico`, `favicon.svg`, `apple-touch-icon.png` | The icons, made from `desktop/icon.svg` |
 | `robots.txt`, `sitemap.xml` | For crawlers: everything allowed, and the two pages with their last change (`lastmod`) |
@@ -106,6 +108,20 @@ node scripts/make-site-images.mjs --capture-key         # the 3D key again, from
 **Cloudflare's robots.txt.** Before `website/robots.txt` existed, `/robots.txt` answered with Cloudflare's managed content-signals text (comments only, no rules, no sitemap). Since the first deploy with our file (30 September 2026, with v1.0.2), Cloudflare serves ours exactly as written.
 
 **Outside the repository:** verify the site in Google Search Console and Bing Webmaster Tools (a DNS TXT record, through the `cloudflare-config` skill) and submit `https://hey-tattle.com/sitemap.xml`. The GitHub repository's social preview (Settings → Social preview, 1280×640) is a separate upload.
+
+## App screenshots
+
+Three real screenshots of the Mac app, taken by Nic on 13 October 2026 from a recording of the MadKoo podcast, live in `website/assets/screens/`:
+
+| File | Shows | Where |
+| --- | --- | --- |
+| `live-{800,1600,2400}` | The whole window: transcript, a Supported and a False verdict with sources, the timeline | The landing page's Rundown (under the five steps), and the end of the docs' Quick start |
+| `start-live-{560,1120}` | The Start live window | The docs' Going live |
+| `insights-{800,1600}` | The Insights window | The docs' Insights |
+
+Each is an AVIF and a WebP at those widths, in a `<picture>` inside a `<figure class="shot">`, with `width`/`height` (so the page never moves when one arrives), `loading="lazy"` (all are below the fold), alt text that says what is on screen, and a caption. The 1600-wide WebP of each is listed in the JSON-LD as `SoftwareApplication.screenshot`. They were made from the PNGs macOS saved (2940 px wide, Retina): cropped to the window (or to the dialog, so its text stays readable at the docs' width), resized, and encoded with Pillow (WebP quality 82, AVIF quality 60); the originals are not kept.
+
+**Adding or replacing one:** drop the PNG in `screenshots-inbox/` at the project root (git-ignored, never deployed), make the same set of files, and update its `<figure>` and the JSON-LD. `tests/website.test.ts` checks the markup, the files (under 400 KB each), and the JSON-LD; `e2e/website/site.spec.ts` checks that each loads as AVIF without moving the page.
 
 ## The docs page
 

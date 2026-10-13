@@ -471,3 +471,64 @@ describe("Three.js, served from the site itself (deploy 2 of the SEO pass)", () 
     expect(read(`website/assets/vendor/${vendored()[0]}`)).toMatch(/@license[\s\S]*MIT/);
   });
 });
+
+describe("app screenshots (real ones, from the Mac app)", () => {
+  const docs = read("website/docs.html");
+  const figures = (html: string) => [...html.matchAll(/<figure class="shot"[\s\S]*?<\/figure>/g)].map((m) => m[0]);
+  const imgOf = (fig: string) => fig.match(/<img [^>]*>/)![0];
+  const attr = (tag: string, name: string) => tag.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
+  const shots: Record<string, string[]> = {
+    "website/index.html": ["rundown"],
+    "website/docs.html": ["start", "session", "insights"],
+  };
+
+  it("shows them where they explain something: the landing page's rundown, and the docs' quick start, going live, and Insights", () => {
+    for (const [file, sections] of Object.entries(shots)) {
+      const html = read(file);
+      for (const id of sections) {
+        const sect = html.match(new RegExp(`<section[^>]*id="${id}"[\\s\\S]*?</section>`))![0];
+        expect(figures(sect).length, `${file} #${id}`).toBe(1);
+      }
+    }
+  });
+
+  it("serves each as AVIF and WebP at several widths, with its size declared, lazy, and described for people who cannot see it", () => {
+    for (const html of [page, docs]) for (const fig of figures(html)) {
+      const img = imgOf(fig);
+      expect(fig).toMatch(/<picture>[\s\S]*<source type="image\/avif" srcset="[^"]+"[\s\S]*<source type="image\/webp" srcset="[^"]+"/);
+      for (const [, set] of fig.matchAll(/srcset="([^"]+)"/g)) for (const part of set!.split(", ")) {
+        const [src, w] = part.split(" ");
+        expect(existsSync(path(`website/${src!.replace(/^\//, "")}`)), src).toBe(true);
+        expect(w, src).toMatch(/^\d+w$/);
+      }
+      expect(attr(img, "loading")).toBe("lazy");
+      expect(attr(img, "decoding")).toBe("async");
+      expect(Number(attr(img, "width"))).toBeGreaterThan(0);
+      expect(Number(attr(img, "height"))).toBeGreaterThan(0);
+      expect(attr(img, "alt")!.length, attr(img, "src")).toBeGreaterThan(60);
+      expect(attr(img, "sizes")).toBeDefined();
+      expect(fig).toMatch(/<figcaption>[^<]{20,}/);
+    }
+  });
+
+  it("keeps the files small, and never the originals, on the site", () => {
+    const files = readdirSync(path("website/assets/screens"));
+    expect(files.length).toBeGreaterThan(6);
+    for (const f of files) {
+      expect(f, f).toMatch(/^[a-z-]+-\d+\.(avif|webp)$/);
+      expect(statSync(path(`website/assets/screens/${f}`)).size, f).toBeLessThan(400_000);
+    }
+  });
+
+  it("lists them as the app's screenshots in its structured data, at their real sizes", () => {
+    const app = jsonLd().find((n) => n["@type"] === "SoftwareApplication")!;
+    expect(app.screenshot.length).toBe(3);
+    for (const shot of app.screenshot) {
+      expect(shot).toMatchObject({ "@type": "ImageObject" });
+      expect(shot.caption.length).toBeGreaterThan(20);
+      const file = served(shot.contentUrl);
+      expect(existsSync(path(file)), file).toBe(true);
+      expect(shot.contentUrl).toMatch(/\.webp$/);
+    }
+  });
+});

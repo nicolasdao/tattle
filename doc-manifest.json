@@ -754,6 +754,7 @@
         "Website",
         "What is in `website/`",
         "Search and link previews",
+        "App screenshots",
         "The docs page",
         "Hosting",
         "Deploying",
@@ -762,7 +763,7 @@
         "Changing the site",
         "Releases update the site"
       ],
-      "line_count": 215,
+      "line_count": 231,
       "links_to": [
         "docs/desktop.md",
         "docs/gotchas.md",
@@ -794,6 +795,7 @@
         ".agents/skills/release-tattle/scripts/deploy-website.sh",
         "e2e/website/**",
         "website/og.jpg",
+        "website/assets/screens/**",
         "website/favicon.*",
         "website/apple-touch-icon.png",
         "scripts/make-site-images.mjs",

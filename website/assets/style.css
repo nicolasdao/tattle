@@ -656,3 +656,9 @@ html { scroll-behavior: smooth; }
   .tabs a { font-size: 14px; letter-spacing: 0.08em; padding-right: 10px; flex: none; }
 }
 .lab-chat .jc-note { padding: 0; }
+
+/* App screenshots (assets/screens/, real ones from the Mac app): sized by their width/height attributes, so the page
+   never moves when one arrives; lazy, below the fold. */
+.shot { margin: 28px 0 8px; }
+.shot img { display: block; width: 100%; height: auto; border-radius: 10px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
+.shot figcaption { margin-top: 12px; font-size: 14px; line-height: 1.5; color: var(--mute); }

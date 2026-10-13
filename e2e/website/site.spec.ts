@@ -330,3 +330,30 @@ test("all text on both pages has enough contrast against its background", async 
     expect(failures, path).toEqual([]);
   }
 });
+
+test("the app screenshots load (AVIF where the browser takes it) and never move the page", async ({ page }) => {
+  await offline(page);
+  await page.addInitScript(() => {
+    (window as unknown as { shifted: number }).shifted = 0;
+    new PerformanceObserver((list) => { for (const e of list.getEntries() as unknown as { value: number }[]) (window as unknown as { shifted: number }).shifted += e.value; })
+      .observe({ type: "layout-shift", buffered: true });
+  });
+  for (const [path, count] of [["/?nogl", 1], ["/docs", 3]] as const) {
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(base + path);
+      const imgs = page.locator("figure.shot img");
+      await expect(imgs).toHaveCount(count);
+      // count only what moves while the screenshots load: the page has settled (fonts in) before the first one is near
+      await page.evaluate(async () => { await document.fonts.ready; await new Promise((r) => setTimeout(r, 300)); (window as unknown as { shifted: number }).shifted = 0; });
+      for (let i = 0; i < count; i++) {
+        await imgs.nth(i).scrollIntoViewIfNeeded();
+        await expect.poll(() => imgs.nth(i).evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), `${path} ${width} #${i}`).toBe(true);
+        expect(await imgs.nth(i).evaluate((img: HTMLImageElement) => img.currentSrc)).toMatch(/\/assets\/screens\/[a-z-]+-\d+\.avif$/);
+        const box = await imgs.nth(i).boundingBox();
+        expect(box!.width).toBeLessThanOrEqual(width);
+      }
+      expect(await page.evaluate(() => (window as unknown as { shifted: number }).shifted), `${path} ${width}`).toBeLessThan(0.001);
+    }
+  }
+});
