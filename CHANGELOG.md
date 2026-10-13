@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-10-13
+
+### Added
+- hey-tattle.com/docs: a manual covering every feature of the app, linked from the landing page
+- hey-tattle.com: links to Nicolas's YouTube and X and the MadKoo podcast in the credits and footer
+
+### Changed
+- hey-tattle.com loads faster: a self-hosted, trimmed three.js cached for good, animations that pause off-screen, and no forced reflows at startup
+- hey-tattle.com is easier to find: the page names the app Tattle for Mac, carries linked structured data and an llms.txt, redirects old addresses, and search engines see the 3D key at rest
+
+### Fixed
+- hey-tattle.com no longer shifts while it loads: fallback fonts match Barlow's widths, and the platform and latest release are known before the first paint
+- hey-tattle.com text meets WCAG AA contrast, and its accessibility issues are fixed
+
 ## [1.0.2] - 2026-09-30
 
 ### Fixed
