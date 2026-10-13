@@ -762,7 +762,7 @@
         "Changing the site",
         "Releases update the site"
       ],
-      "line_count": 206,
+      "line_count": 215,
       "links_to": [
         "docs/desktop.md",
         "docs/gotchas.md",
@@ -788,7 +788,10 @@
         "website/llms.txt",
         "website/docs.md",
         "scripts/make-docs-md.mjs",
+        "scripts/make-docs-md.d.mts",
         "scripts/vendor-three.mjs",
+        ".agents/skills/release-tattle/scripts/update-website.sh",
+        ".agents/skills/release-tattle/scripts/deploy-website.sh",
         "e2e/website/**",
         "website/og.jpg",
         "website/favicon.*",

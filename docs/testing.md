@@ -29,10 +29,10 @@ Every change to Tattle is test-first (the rule is in [CLAUDE.md](../CLAUDE.md)).
 | Shared fakes and builders | `tests/fakes/*.ts`, imported from `tests/fakes/index.ts` | — | — |
 | Web page, DOM | `tests/web/<module>.test.ts`, first line `// @vitest-environment happy-dom` | Vitest | happy-dom |
 | Web test helpers | `tests/web/helpers.ts` | — | — |
-| The website, hey-tattle.com (its head, icons, crawl files, and what the release rewrites in it) | `tests/website.test.ts`, which reads `website/` | Vitest | node |
+| The website, hey-tattle.com: its head and structured data, icons, crawl files (sitemap, robots, `llms.txt`, `docs.md`, the 301s), the CSP hashes of every inline script, the vendored Three.js, the fonts' fallbacks, the docs' dates, and what the release rewrites on both pages | `tests/website.test.ts`, which reads `website/` | Vitest | node |
 | End-to-end, web page | `e2e/web/*.spec.ts` (harness in `e2e/harness/`) | Playwright (Chromium) | real browser |
 | End-to-end, Mac app | `e2e/electron/*.spec.ts` | Playwright `_electron` | development app |
-| End-to-end, website (the 3D key resting and its CSS fallback, the record button's name, footer targets, the docs' contents fold, nothing off a phone screen) | `e2e/website/*.spec.ts`: serves `website/` from disk and Three.js from the `three` devDependency, offline | Playwright (Chromium, SwiftShader) | real browser |
+| End-to-end, website: the 3D key resting, its CSS fallback and Three.js preload; the record button's name and placement; footer targets; the docs' contents fold; nothing off a phone screen; off-screen animations waiting; no shift when fonts arrive or before scripts run; GitHub's API at most once an hour and never for automated browsers; WCAG AA contrast on both pages | `e2e/website/*.spec.ts`: serves `website/` from disk (Three.js included, vendored in `assets/vendor/`), offline. The font checks need Arial or Liberation Sans (any Mac has Arial) and skip without either | Playwright (Chromium, SwiftShader) | real browser |
 | Capture helper (Swift) | `native/capture/Tests/tattle-capture-tests/*.swift` | `swift test` | — |
 
 - Pure web modules (`web/src/router.ts`, `web/src/state.ts`) can be tested in node without the docblock.
