@@ -198,10 +198,6 @@ for (const [path, marks] of [
 ] as const) {
   for (const width of [390, 412, 1440]) { // 412: the phone Lighthouse emulates
     test(`${path} at ${width} px does not move when its web fonts arrive`, async ({ page, browser }) => {
-      // BUG (known): at 412 px each page's lede sits on a line-break point, and the fallback wraps it one line shorter
-      // than Barlow does. Both pages preload the lede's faces (Barlow 500 and 700), so Lighthouse measures no shift, but
-      // a first visit on a slow phone still can. Turns red (make it a plain test) once the fallback alone holds 412 px.
-      test.fail(width === 412, "the lede rewraps at 412 px with the fallback alone");
       await offline(page);
       await page.setViewportSize({ width, height: 900 });
       await page.goto(base + path);
