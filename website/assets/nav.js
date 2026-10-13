@@ -51,25 +51,25 @@
     fill.style.transform = `scaleX(${max > 0 ? Math.min(1, y / max) : 0})`;
   }
 
+  // The bar's state from the scroll position: every read first, then only writes.
+  function update() {
+    const max = document.documentElement.scrollHeight - window.innerHeight, y = window.scrollY;
+    pick();
+    progress(max, y);
+    bar.classList.toggle("scrolled", y > 8);
+  }
   let queued = false;
   function onScroll() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      const max = document.documentElement.scrollHeight - window.innerHeight, y = window.scrollY; // reads first,
-      pick();                                                                                       // then pick's own read,
-      progress(max, y);                                                                             // then only writes
-      bar.classList.toggle("scrolled", y > 8);
-    });
+    requestAnimationFrame(() => { queued = false; update(); });
   }
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", () => { placeTicks(); onScroll(); });
-  // Sections grow as their demos fill in and fonts load: re-place the ticks when the page settles.
-  window.addEventListener("load", () => { placeTicks(); onScroll(); });
-  if ("ResizeObserver" in window) new ResizeObserver(() => placeTicks()).observe(document.body);
-  placeTicks();
-  onScroll();
+  // Sections grow as their demos fill in and fonts load: the observer re-places the ticks and the bar whenever the page
+  // changes size. Its callbacks run after the browser's own layout, so its reads are free (none forced at startup).
+  if ("ResizeObserver" in window) new ResizeObserver(() => { placeTicks(); update(); }).observe(document.body);
+  else { placeTicks(); onScroll(); }
 
   // ---------- the bar's Download, once the hero's big one is off screen ----------
   const bigDownload = document.querySelector(".hero .dl");

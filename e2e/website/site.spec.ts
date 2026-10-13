@@ -1,7 +1,7 @@
 // hey-tattle.com in a real browser: the 3D record key rests when nobody is around, headless and software-GL browsers get
 // the CSS key, the key's button is named by the words it shows, the footer's links are full-size targets, the docs'
-// contents list never makes the page jump, and nothing runs off a phone screen. Offline: website/ is served from disk,
-// Three.js from node_modules (the same files, by the import map's integrity hashes), and GitHub's API is refused.
+// contents list never makes the page jump, and nothing runs off a phone screen. Offline: website/ is served from disk
+// (Three.js included, vendored in assets/vendor/), and GitHub's API is refused.
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { extname, join } from "node:path";
@@ -32,10 +32,6 @@ test.afterAll(() => new Promise<void>((done) => server.close(() => done())));
 test.use({ launchOptions: { args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } });
 
 async function offline(page: Page) {
-  await page.route(/^https:\/\/cdn\.jsdelivr\.net\/npm\/three@[^/]+\/(.+)$/, (route) => {
-    const rel = route.request().url().replace(/^https:\/\/cdn\.jsdelivr\.net\/npm\/three@[^/]+\//, "");
-    return route.fulfill({ path: join(ROOT, "node_modules/three", rel), contentType: "text/javascript", headers: { "access-control-allow-origin": "*" } });
-  });
   await page.route(/api\.github\.com|cloudflareinsights/, (route) => route.abort());
 }
 
@@ -72,8 +68,12 @@ test("the 3D key stops drawing once nobody has moved for a while, and wakes when
   await notAutomated(page);
   await countFrames(page);
   await offline(page);
+  const loaded: string[] = [];
+  page.on("requestfinished", (r) => loaded.push(r.url()));
   await page.goto(base + "/?gl"); // ?gl: WebGL even on a software renderer, so this machine can run the scene
   await expect(page.locator("#csskey")).toBeHidden();
+  await expect.poll(() => loaded.some((u) => u.startsWith(`${base}/assets/vendor/three-`))).toBe(true); // three.js from the site
+  expect(loaded.filter((u) => !u.startsWith(base))).toEqual([]); // and nothing from a CDN
   await expect.poll(() => frames(page), { timeout: 15_000 }).toBeGreaterThan(5); // the scene is drawing
   await page.waitForTimeout(14_000); // 9 s of rest, plus the last idle ring fading out (3.6 s)
   const before = await frames(page);
@@ -147,4 +147,45 @@ test("on a phone, no text on either page runs off the screen (tables and code sc
     });
     expect(clipped, path).toEqual([]);
   }
+});
+
+test("three.js is preloaded alongside the 3D scene, and never fetched for the CSS key", async ({ page }) => {
+  await offline(page);
+  const three: string[] = [];
+  page.on("request", (r) => { if (r.url().includes("/assets/vendor/three-")) three.push(r.url()); });
+  await page.goto(base + "/"); // automated: the CSS key
+  await expect(page.locator("#csskey")).toBeVisible();
+  await page.waitForTimeout(1000);
+  expect(three).toEqual([]);
+  await expect(page.locator('link[rel="modulepreload"]')).toHaveCount(0);
+
+  await notAutomated(page);
+  await page.goto(base + "/?gl");
+  await expect(page.locator('link[rel="modulepreload"]')).toHaveAttribute("href", /\/assets\/vendor\/three-[\d.]+\.[0-9a-f]{10}\.js$/);
+  await expect.poll(() => three.length).toBeGreaterThan(0);
+});
+
+test("animations below the fold wait until their section scrolls into view, then run", async ({ page }) => {
+  await offline(page);
+  await page.goto(base + "/?nogl");
+  const states = (sel: string) => page.locator(sel).first().evaluate((el) => el.getAnimations({ subtree: true }).map((a) => a.playState));
+  await expect.poll(() => states(".signoff-mark")).toEqual(["paused"]); // the sign-off is far down the page
+  await expect.poll(() => states(".cue-arrow")).toEqual(["running"]); // the hero's own loops run
+  await page.locator(".signoff-mark").scrollIntoViewIfNeeded();
+  await expect.poll(() => states(".signoff-mark")).toEqual(["running"]);
+  await expect.poll(() => states(".meter")).toEqual(["paused"]); // the rundown's meters, now far above
+  await page.locator(".meter").first().scrollIntoViewIfNeeded();
+  await expect.poll(() => states(".meter")).toEqual(["running"]);
+});
+
+test("the record button sits on the key, and the header's playhead has a tick per section", async ({ page }) => {
+  await offline(page);
+  await page.goto(base + "/?nogl");
+  const box = (sel: string) => page.locator(sel).evaluate((el) => el.getBoundingClientRect().toJSON());
+  await expect.poll(async () => {
+    const [rec, key] = [await box("#rec"), await box("#csskey")];
+    return Math.abs(rec.x - key.x) < 2 && Math.abs(rec.y - key.y) < 2 && Math.abs(rec.width - key.width) < 2;
+  }).toBe(true);
+  const sections = await page.locator("#bar .tabs a[href^='#']").count();
+  await expect(page.locator("#bar-track b")).toHaveCount(sections);
 });

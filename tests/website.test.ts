@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
@@ -400,5 +400,36 @@ describe("search: the SEO pass of 12 October 2026", () => {
   it("gives every docs table its header cells, and the footer links a 24 px target", () => {
     for (const [table] of docs.matchAll(/<table>[\s\S]*?<\/table>/g)) expect(table).toMatch(/<th scope="(col|row)">/);
     expect(read("website/assets/style.css")).toMatch(/\.fine-links a \{[^}]*min-height: 24px/);
+  });
+});
+
+describe("Three.js, served from the site itself (deploy 2 of the SEO pass)", () => {
+  const map = JSON.parse(page.match(/<script type="importmap">([\s\S]*?)<\/script>/)![1]!);
+  const scene = read("website/assets/scene.js");
+  const vendored = () => readdirSync(path("website/assets/vendor")).filter((f) => /^three-.*\.js$/.test(f));
+
+  it("loads no script from a CDN: the import map points at one vendored file, and the CSP no longer allows jsDelivr", () => {
+    expect(vendored()).toHaveLength(1);
+    const file = `/assets/vendor/${vendored()[0]}`;
+    for (const specifier of ["three", "three/addons/environments/RoomEnvironment.js", "three/addons/utils/BufferGeometryUtils.js"])
+      expect(map.imports[specifier], specifier).toBe(file);
+    for (const f of ["website/index.html", "website/docs.html", "website/_headers", ...readdirSync(path("website/assets")).filter((f) => f.endsWith(".js")).map((f) => `website/assets/${f}`)])
+      expect(read(f), f).not.toContain("jsdelivr");
+  });
+
+  it("names the vendored file by its version and content hash, so it can be cached for a year", () => {
+    const name = vendored()[0]!;
+    const version = JSON.parse(read("package.json")).devDependencies.three;
+    const hash = createHash("sha256").update(readFileSync(path(`website/assets/vendor/${name}`))).digest("hex").slice(0, 10);
+    expect(name).toBe(`three-${version}.${hash}.js`);
+    expect(read("website/_headers")).toMatch(/^\/assets\/vendor\/\*\n\s+Cache-Control: public, max-age=31536000, immutable$/m);
+  });
+
+  it("exports everything scene.js uses, and keeps three.js's license notice", async () => {
+    const mod = await import(path(`website/assets/vendor/${vendored()[0]}`));
+    const used = [...new Set([...scene.matchAll(/THREE\.([A-Za-z0-9_]+)/g)].map((m) => m[1]!))];
+    expect(used.length).toBeGreaterThan(20);
+    for (const name of [...used, "RoomEnvironment", "mergeVertices"]) expect(mod[name], name).toBeDefined();
+    expect(read(`website/assets/vendor/${vendored()[0]}`)).toMatch(/@license[\s\S]*MIT/);
   });
 });

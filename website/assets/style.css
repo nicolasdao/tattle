@@ -35,6 +35,8 @@ body { background: var(--ground); }
 @keyframes onair-label { 0%, 35% { transform: translateX(-24px); opacity: 0; } 100% { transform: none; opacity: 1; } }
 @keyframes onair-sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 @keyframes pulse { 50% { opacity: 0.3; } }
+/* main.js marks sections far from the screen: their loops wait (and resume where they were) */
+.offscreen, .offscreen *, .offscreen *::before, .offscreen *::after { animation-play-state: paused !important; }
 
 .strap {
   background: var(--paper); color: var(--paper-ink); display: flex; flex-direction: column; justify-content: center; min-width: 0;

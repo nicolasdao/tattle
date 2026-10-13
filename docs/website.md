@@ -15,6 +15,7 @@ source:
   - website/llms.txt
   - website/docs.md
   - scripts/make-docs-md.mjs
+  - scripts/vendor-three.mjs
   - e2e/website/**
   - website/og.jpg
   - website/favicon.*
@@ -48,7 +49,7 @@ Tattle's official website is **https://hey-tattle.com**. It is one page whose jo
 The page was chosen from experiment `02-record-button`. Its sections, top to bottom:
 
 0. **The header bar** (`assets/nav.js`), pinned to the top as the page scrolls: the app's own header strap (the ON AIR block, which the record key turns on, the name as a `<p>`, the record clock), the show's rundown as tabs (`01 Rundown` … `06 Credits`; the section on screen lights up red like a segment going on air) and a **Docs** tab to the manual (`nav.js` lights only the `#` tabs, so a tab to another page must not start with `#`), a compact Download that slides in once the hero's is off screen, and a playhead along its bottom edge with a tick where each section starts. On a phone the tabs are a swipeable second row.
-1. **The hero**: the page's only `<h1>` is the lede beside the key ("Tattle listens to your calls…"), so the heading says what the app does. Under it, one small sentence names the product the way search should: "Tattle for Mac is a free, open-source app that…" ("Tattle" alone is crowded: tattle.life, Tattle TV, Tattle Civic Tech). Under the Download button, a second line gives the limits: English only, and fact-checking's OpenRouter key at up to about $0.35 an hour (the docs' figure). **The record key** (`assets/scene.js`, Three.js): the app icon as a glossy 3D key. Pressing it takes the page "on air" with rings, rising captions, and fact-check lower thirds. Without WebGL, `assets/main.js` draws a CSS key instead; with reduced motion, a calm version. The CSS key is also what automated browsers (`navigator.webdriver`: crawlers, Lighthouse) and software renderers (SwiftShader, llvmpipe) get, because the 3D scene stalled them (`?gl` forces WebGL, `?nogl` the CSS key). The 3D key stops drawing 9 s after the last pointer or tilt input (`REST_AFTER` in `scene.js`, idle rings included) and wakes on the next one; before 12 October 2026 the idle rings kept it drawing forever, so headless crawlers never finished loading the page. The record button has no `aria-label`: its name is its visible text, so voice control finds it.
+1. **The hero**: the page's only `<h1>` is the lede beside the key ("Tattle listens to your calls…"), so the heading says what the app does. Under it, one small sentence names the product the way search should: "Tattle for Mac is a free, open-source app that…" ("Tattle" alone is crowded: tattle.life, Tattle TV, Tattle Civic Tech). Under the Download button, a second line gives the limits: English only, and fact-checking's OpenRouter key at up to about $0.35 an hour (the docs' figure). **The record key** (`assets/scene.js`, Three.js): the app icon as a glossy 3D key. Pressing it takes the page "on air" with rings, rising captions, and fact-check lower thirds. Without WebGL, `assets/main.js` draws a CSS key instead; with reduced motion, a calm version. The CSS key is also what automated browsers (`navigator.webdriver`: crawlers, Lighthouse) and software renderers (SwiftShader, llvmpipe) get, because the 3D scene stalled them (`?gl` forces WebGL, `?nogl` the CSS key). The 3D key stops drawing 9 s after the last pointer or tilt input (`REST_AFTER` in `scene.js`, idle rings included) and wakes on the next one; before 12 October 2026 the idle rings kept it drawing forever, so headless crawlers never finished loading the page. The record button has no `aria-label`: its name is its visible text, so voice control finds it. Below the hero, `main.js` marks each section and the footer `offscreen` while it is more than 200 px from the screen, which pauses its looping CSS animations (meters, pulses, the sign-off glow); a paused loop resumes where it was, so nothing looks different. The record button, the header's section ticks and the docs' contents highlight are first measured in a `ResizeObserver` callback, after the browser's own layout, so startup forces no extra layout.
 2. **Rundown**: what the app does, in five steps, closed by **Your Mac does the listening** (`.onmac`): on macOS 26 or later transcripts are free, private, and work offline with Apple Speech. Its claims must keep "transcript-only" and "once the speech model has downloaded", and name the older-macOS and online-feature cases (see [Transcription](transcription.md)).
 3. **Jev** (`#jev`): why a decision model makes live judgment affordable, with a replaying **Jev call** (`assets/sections.js`). The questions shown are Tattle's real ones; the answers are labelled as examples. It links to [TypeSafe AI](https://typesafe.ai) and [Jev's documentation](https://docs.typesafe.ai/). See [Jev](jev.md).
 4. **Fast and slow** (`#systems`): System 1 and System 2, with a live stream of lines and the two systems' costs. See [System 1 and System 2](system1-system2.md).
@@ -153,19 +154,21 @@ Set `CLOUDFLARE_ACCOUNT_ID` too if the token can see more than one account.
 
 | Header | Why |
 | --- | --- |
-| `Content-Security-Policy` | Scripts only from the site itself, `cdn.jsdelivr.net` (Three.js), and `static.cloudflareinsights.com` (Web Analytics), plus two inline scripts by their SHA-256 hashes (the landing page's import map, and the docs' contents fold); styles from the site (inline `style` attributes allowed); images from the site and `data:`; network calls only to the site, `api.github.com`, and `cloudflareinsights.com` (the visit Web Analytics reports); no plugins, forms, `<base>`, or framing |
+| `Content-Security-Policy` | Scripts only from the site itself (Three.js included) and `static.cloudflareinsights.com` (Web Analytics), plus two inline scripts by their SHA-256 hashes (the landing page's import map, and the docs' contents fold); styles from the site (inline `style` attributes allowed); images from the site and `data:`; network calls only to the site, `api.github.com`, and `cloudflareinsights.com` (the visit Web Analytics reports); no plugins, forms, `<base>`, or framing |
 | `Strict-Transport-Security` | Browsers use HTTPS for a year |
 | `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` | No MIME sniffing, no framing, a minimal referrer, no camera/microphone/location/payment access, an isolated browsing context |
+| `Cache-Control` | `/assets/vendor/*` for a year, `immutable` (its file names carry their content hash); `/assets/fonts/*` for a month (they keep their names when they change, so never `immutable`); everything else revalidates on every visit (Cloudflare's default) |
 
-**Three.js is pinned by integrity.** The page's import map loads Three.js 0.170.0 from jsDelivr and lists a `sha384` for each file it loads (`three.module.js`, `RoomEnvironment.js`, `BufferGeometryUtils.js`). A modified file on the CDN is refused, and the page falls back to the CSS key.
-
-**Changing either means recomputing a hash**, or the 3D key silently falls back (see [Gotchas](gotchas.md#website-and-cloudflare)):
+**Three.js is served by the site itself** (since 12 October 2026; before, the import map loaded it from jsDelivr). `scripts/vendor-three.mjs` bundles only what `assets/scene.js` uses (every `THREE.<name>`, plus `RoomEnvironment` and `mergeVertices`) from the `three` devDependency's source modules, tree-shaken and minified, into `website/assets/vendor/three-<version>.<hash>.js` (520 KiB, about 138 KB compressed, half what jsDelivr sent), with three.js's MIT license header. It then points the import map's three specifiers at that file and writes the import map's new hash into the CSP. `main.js` adds a `modulepreload` for it when it loads the 3D scene, so the two download together; automated and software-GL browsers, which get the CSS key, never fetch it.
 
 ```bash
-# After editing the <script type="importmap"> block: its hash, for script-src in _headers
+node scripts/vendor-three.mjs   # after changing scene.js's use of Three.js, or the `three` version in package.json
+```
+
+`tests/website.test.ts` fails when the file exports less than `scene.js` uses, its name does not match its content, or anything still points at a CDN. **Editing the import map by hand means recomputing its hash** in `_headers`, or the 3D key silently falls back (see [Gotchas](gotchas.md#website-and-cloudflare)); the script does it for you:
+
+```bash
 python3 -c "import re,hashlib,base64;s=open('website/index.html').read();m=re.search(r'<script type=\"importmap\">(.*?)</script>',s,re.S);print('sha256-'+base64.b64encode(hashlib.sha256(m.group(1).encode()).digest()).decode())"
-# After changing a Three.js version or file: its integrity, for the import map
-curl -sL https://cdn.jsdelivr.net/npm/three@<version>/build/three.module.js | openssl dgst -sha384 -binary | openssl base64 -A
 ```
 
 Check with `npx wrangler dev` and the browser console: a blocked script is reported there.
@@ -185,7 +188,7 @@ The `cloudflare` skill's `cf.js` needs a workaround in this repository (see [Got
 ## Changing the site
 
 1. Edit files under `website/`; preview with `npx wrangler dev`.
-2. If the import map or a Three.js version changed, recompute the hashes ([Security](#security)).
+2. If `scene.js`'s use of Three.js or its version changed, run `node scripts/vendor-three.mjs`; after any other edit to the import map, recompute its hash ([Security](#security)). After editing `docs.html`, run `node scripts/make-docs-md.mjs`.
 3. Run `npx vitest run tests/website.test.ts` and `npx playwright test --project=website`: it fails when the head loses a tag, the manual falls behind the app (see [The docs page](#the-docs-page)), the image outgrows its limits, the release's `update-website.sh` no longer finds a field it rewrites, or the import map's hash is stale.
 4. Commit and push to `master`. Cloudflare redeploys within minutes; check **Deployments** in the dashboard, or https://hey-tattle.com.
 

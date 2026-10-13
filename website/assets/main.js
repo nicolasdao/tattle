@@ -85,12 +85,15 @@ function cssKey() {
 async function initKey() {
   if (hasWebGL()) {
     try {
+      // Fetch three.js alongside scene.js instead of after it: the import map knows its hashed address.
+      const pre = Object.assign(document.createElement("link"), { rel: "modulepreload", href: import.meta.resolve("three") });
+      document.head.append(pre);
       const { createScene } = await import("./scene.js");
       api = createScene({ canvas: $("gl"), stage, reduced });
     } catch (err) { console.warn("WebGL key unavailable, using the CSS key.", err); api = null; }
   }
   if (!api) api = cssKey();
-  placeHit();
+  // The observer places the button on its first callback, after the browser's own layout: no forced reflow at startup.
   new ResizeObserver(placeHit).observe(stage);
   if (params.has("live")) setTimeout(() => { api.tap(); toggle(); }, 500);
 }
@@ -283,6 +286,14 @@ const io = new IntersectionObserver((entries) => {
   entries.forEach((en) => { if (en.isIntersecting) { segs.forEach((s) => s.classList.toggle("cur", s === en.target)); } });
 }, { rootMargin: "-45% 0px -45% 0px" });
 segs.forEach((s) => io.observe(s));
+
+// ---------- animations rest off screen ----------
+// A section's looping animations (meters, pulses, the sign-off glow) run only while it is near the screen: a paused
+// loop resumes where it was, so nothing looks different, and the browser stops restyling what nobody sees.
+const rest = new IntersectionObserver((entries) => {
+  entries.forEach((en) => en.target.classList.toggle("offscreen", !en.isIntersecting));
+}, { rootMargin: "200px 0px" });
+document.querySelectorAll("main > section, footer").forEach((el) => { el.classList.add("offscreen"); rest.observe(el); });
 
 // the release's version and size, once GitHub names them
 if (window.CA) window.CA.ready(() => document.querySelectorAll(".ver").forEach((el) => { el.hidden = false; }));

@@ -259,7 +259,7 @@
         "Testing",
         "Test fixture"
       ],
-      "line_count": 129,
+      "line_count": 130,
       "links_to": [
         "docs/architecture.md",
         "docs/desktop.md",
@@ -762,7 +762,7 @@
         "Changing the site",
         "Releases update the site"
       ],
-      "line_count": 201,
+      "line_count": 204,
       "links_to": [
         "docs/desktop.md",
         "docs/gotchas.md",
@@ -788,6 +788,7 @@
         "website/llms.txt",
         "website/docs.md",
         "scripts/make-docs-md.mjs",
+        "scripts/vendor-three.mjs",
         "e2e/website/**",
         "website/og.jpg",
         "website/favicon.*",

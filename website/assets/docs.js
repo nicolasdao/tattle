@@ -34,5 +34,7 @@
     requestAnimationFrame(() => { queued = false; pick(); });
   }, { passive: true });
   window.addEventListener("resize", pick);
-  pick();
+  // The first pick runs after the browser's own layout (an observer's first callback), so it forces none at startup.
+  if ("ResizeObserver" in window) new ResizeObserver(() => pick()).observe(document.body);
+  else pick();
 })();
