@@ -119,3 +119,9 @@ Temporary Items
 
 # Local secrets for the project's skills (the Cloudflare API token)
 secrets/
+
+# ------------------------------------------------------------
+# App screenshots as taken (large PNGs): dropped here, optimized into
+# website/assets/screens/, then deleted. Never committed.
+# ------------------------------------------------------------
+screenshots-inbox/
