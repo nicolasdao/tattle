@@ -10,6 +10,7 @@ import { SessionLibrary } from "../src/store/library.ts";
 import { createReadStream } from "node:fs";
 import { Engine } from "../src/server/main.ts";
 import { cleanTmpDirs, recording, tmpDir, withEnv } from "./fakes/index.ts";
+import { checkSeal, readSeal, sealRecording, SigningKey } from "../src/store/seal.ts";
 
 const hasAfconvert = (() => { try { execFileSync("which", ["afconvert"]); return true; } catch { return false; } })();
 
@@ -454,5 +455,42 @@ describe("export and import, case by case", () => {
     const dest = tmpDir("dest-");
     const { id } = await importRecording(r.path, dest, null);
     expect(statSync(join(dest, id, "host.wav")).size).toBe(44 + 3 * 32_000);
+  });
+});
+
+describe("a sealed recording, exported and imported (docs/recordings.md § Proof of a recording)", () => {
+  const APP = { name: "tattle", version: "1.1.0" };
+  async function sealed() {
+    const dir = recording(tmpDir("src-"));
+    await sealRecording(dir, { key: SigningKey.load(join(tmpDir("key-"), "k.json")), app: APP, when: "ended" });
+    return dir;
+  }
+
+  test("the seal and the frozen transcript travel in the file, whatever the audio choice", async () => {
+    const dir = await sealed();
+    const r = await exportRecording(dir, "20260925-120000", { audio: "none", chats: false, app: APP, outDir: tmpDir("out-") });
+    const names = (await readZipEntries(r.path)).map((e) => e.name);
+    expect(names).toEqual(expect.arrayContaining(["data/seal.json", "data/transcript.jsonl"]));
+    const dest = tmpDir("dest-");
+    const { id } = await importRecording(r.path, dest, null);
+    expect(readSeal(join(dest, id))).toEqual(readSeal(dir));
+  });
+
+  test("with the original audio, the seal still holds after import, byte for byte", async () => {
+    const dir = await sealed();
+    const r = await exportRecording(dir, "20260925-120000", { audio: "original", chats: false, app: APP, outDir: tmpDir("out-") });
+    const dest = tmpDir("dest-");
+    const { id } = await importRecording(r.path, dest, null);
+    expect(await checkSeal(join(dest, id))).toMatchObject({ signature: true, intact: true });
+  });
+
+  test.skipIf(!hasAfconvert)("with compressed audio, the audio no longer matches its fingerprints (the rest still does)", async () => {
+    const dir = await sealed();
+    const r = await exportRecording(dir, "20260925-120000", { audio: "compressed", chats: false, app: APP, outDir: tmpDir("out-") });
+    const dest = tmpDir("dest-");
+    const { id } = await importRecording(r.path, dest, null);
+    const c = await checkSeal(join(dest, id));
+    expect(c?.intact).toBe(false);
+    expect(c?.files.filter((f) => !f.ok).map((f) => f.name)).toEqual(["host.wav", "remote.wav"]);
   });
 });

@@ -20,8 +20,9 @@ const withStatus = (status: string | null) => {
   if (status) st.session = { id: "20260925-120000", mode: "live", status };
 };
 const info = (o: Partial<ExportInfo> = {}): ExportInfo => ({
-  id: "20260925-120000", name: "Pilot", fileName: "Pilot.tattle", recordedWith: "0.7.0", app: { name: "Tattle", version: "0.8.0" },
-  bytes: { compressed: 56_700_000, original: 450_000_000, none: 3_000_000 }, chats: 2, hasAudio: true, ...o,
+  id: "20260925-120000", name: "Pilot", fileName: "Pilot.tattle", transcriptFileName: "Pilot transcript.txt", recordedWith: "0.7.0",
+  app: { name: "Tattle", version: "0.8.0" }, bytes: { compressed: 56_700_000, original: 450_000_000, none: 3_000_000, transcript: 40_000 },
+  chats: 2, hasAudio: true, seal: null, trustedTimestamps: false, ...o,
 });
 const summary = (o: Partial<SessionSummary> = {}): SessionSummary => ({
   id: "20260925-120000", name: "Pilot", notes: null, mode: "live", startedAt: "2026-09-25T12:00:00.000Z", durationMs: 612_000, ended: true,
@@ -100,19 +101,20 @@ describe("the Export window", () => {
     await t.openExport("20260925-120000");
     expect(text("#export-sub")).toBe("Pilot");
     const radios = () => all("#export-body .choice");
-    expect(radios().map((r) => [r.getAttribute("aria-checked"), text(".choice-size", r)])).toEqual([["true", "≈ 57 MB"], ["false", "≈ 450 MB"], ["false", "≈ 3.0 MB"]]);
+    expect(radios().map((r) => [r.getAttribute("aria-checked"), text(".choice-size", r)])).toEqual([["true", "≈ 57 MB"], ["false", "≈ 450 MB"], ["false", "≈ 3.0 MB"], ["false", "≈ 40 KB"]]);
     expect(text("#export-body .start-summary")).toBe("Pilot.tattleAbout 57 MB: fits WhatsApp (2 GB); too big for most email.Recorded with v0.7.0 · exported with v0.8.0.");
     radios()[2]!.click();
-    expect(radios().map((r) => r.getAttribute("aria-checked"))).toEqual(["false", "false", "true"]);
+    expect(radios().map((r) => r.getAttribute("aria-checked"))).toEqual(["false", "false", "true", "false"]);
     expect(text("#export-body .start-summary")).toContain("About 3.0 MB: fits email and WhatsApp.");
     expect(document.activeElement?.textContent).toBe("Export");
   });
 
   test("without audio: compressed and original are disabled, No audio is chosen; a name falls back to the id", async () => {
-    fake.exportInfo!.mockResolvedValue(info({ hasAudio: false, name: null, recordedWith: null, bytes: { compressed: 1, original: 1, none: 3e9 } }));
+    fake.exportInfo!.mockResolvedValue(info({ hasAudio: false, name: null, recordedWith: null, bytes: { compressed: 1, original: 1, none: 3e9, transcript: 1 } }));
     await t.openExport("20260925-120000");
     const radios = all("#export-body .choice") as HTMLButtonElement[];
-    expect(radios.map((r) => [r.disabled, r.getAttribute("aria-checked")])).toEqual([[true, "false"], [true, "false"], [false, "true"]]);
+    // a transcript needs no audio
+    expect(radios.map((r) => [r.disabled, r.getAttribute("aria-checked")])).toEqual([[true, "false"], [true, "false"], [false, "true"], [false, "false"]]);
     expect(radios.slice(0, 2).map((r) => text(".feat-text span", r))).toEqual(["This recording has no audio.", "This recording has no audio."]);
     expect(radios.slice(0, 2).map((r) => text(".choice-size", r))).toEqual(["", ""]);
     expect(text("#export-sub")).toBe("20260925-120000");
@@ -461,5 +463,70 @@ describe("dropping a file anywhere on the page", () => {
     document.dispatchEvent(drag("drop", [file("Mine.tattle-labels")]));
     await flush();
     expect(toasts()).toEqual(["That is not a recording file: it should end in .tattle."]);
+  });
+});
+
+describe("the Export window's transcript (docs/recordings.md § Transcript export)", () => {
+  const sw = (name: string) => [...document.querySelectorAll<HTMLButtonElement>("#export-body [role=switch]")].find((b) => text("b", b) === name)!;
+  const choose = () => all("#export-body .choice")[3]!.click();
+
+  test("Transcript only: the chats switch gives way to trusted timestamps, and the summary names the file and the seal", async () => {
+    fake.exportInfo!.mockResolvedValue(info());
+    await t.openExport("x");
+    expect(text(".feat-text b", all("#export-body .choice")[3]!)).toBe("Transcript only");
+    expect([sw("Include my chats").hidden, sw("Trusted timestamps").hidden]).toEqual([false, true]);
+    choose();
+    expect([sw("Include my chats").hidden, sw("Trusted timestamps").hidden]).toEqual([true, false]);
+    expect(sw("Trusted timestamps").getAttribute("aria-checked")).toBe("false");
+    expect(text(".feat-text span", sw("Trusted timestamps"))).toMatch(/only a fingerprint leaves this Mac/i);
+    expect(text("#export-body .start-summary")).toBe(
+      "Pilot transcript.txtAbout 40 KB: fits email and WhatsApp.Not sealed yet: it is sealed as it is exported, a signed and dated record of its files.");
+    all("#export-body .choice")[0]!.click();
+    expect(sw("Include my chats").hidden).toBe(false);
+  });
+
+  test("the seal as it stands: when it ended or at its first export, and by whom it was timestamped", async () => {
+    fake.exportInfo!.mockResolvedValue(info({ seal: { when: "ended", sealedAt: "2026-09-25T13:00:00.000Z", timestamps: ["DigiCert", "FreeTSA"] }, trustedTimestamps: true }));
+    await t.openExport("x");
+    choose();
+    expect(sw("Trusted timestamps").getAttribute("aria-checked")).toBe("true");
+    const when = new Date("2026-09-25T13:00:00.000Z").toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    expect(text("#export-body .start-summary")).toContain(`Sealed when it ended, ${when} · timestamped by DigiCert, FreeTSA.`);
+    fake.exportInfo!.mockResolvedValue(info({ seal: { when: "export", sealedAt: "2026-09-25T13:00:00.000Z", timestamps: [] } }));
+    await t.openExport("x");
+    choose();
+    expect(text("#export-body .start-summary")).toContain(`Sealed at its first export, ${when} · not timestamped.`);
+  });
+
+  test("Export writes the transcript with the timestamps choice, downloads it, and says to keep the audio", async () => {
+    fake.exportInfo!.mockResolvedValue(info());
+    const answer = later<{ token: string; fileName: string; bytes: number }>();
+    fake.exportTranscript!.mockReturnValue(answer.promise);
+    await t.openExport("20260925-120000");
+    choose();
+    sw("Trusted timestamps").click();
+    const clicked: HTMLAnchorElement[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) { clicked.push(this); });
+    const go = button("Export", document.getElementById("export-body")!)!;
+    go.click();
+    expect(text("#export-body [aria-live]")).toBe("Asking the timestamp authorities: a few seconds.");
+    expect(fake.exportTranscript).toHaveBeenCalledWith("20260925-120000", true);
+    expect(fake.exportPrepare).not.toHaveBeenCalled();
+    answer.resolve({ token: "t2", fileName: "Pilot transcript.txt", bytes: 40_000 });
+    await flush();
+    expect(clicked.map((a) => [a.getAttribute("href"), a.getAttribute("download")])).toEqual([["/api/exports/t2", "Pilot transcript.txt"]]);
+    expect(toasts()).toEqual(["Exported Pilot transcript.txt (40 KB): check your Downloads folder. Keep the recording's original audio with it: the transcript's seal points to it."]);
+  });
+
+  test("without timestamps nothing is said while preparing; switching them off is sent too", async () => {
+    fake.exportInfo!.mockResolvedValue(info({ trustedTimestamps: true }));
+    fake.exportTranscript!.mockResolvedValue({ token: "t3", fileName: "Pilot transcript.txt", bytes: 1 });
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    await t.openExport("x");
+    choose();
+    sw("Trusted timestamps").click();
+    button("Export", document.getElementById("export-body")!)!.click();
+    expect(text("#export-body [aria-live]")).toBe("");
+    expect(fake.exportTranscript).toHaveBeenCalledWith("x", false);
   });
 });

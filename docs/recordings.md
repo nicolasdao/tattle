@@ -1,6 +1,6 @@
 ---
-description: Where every session is stored, what each file holds, and how the recordings library lists, names, searches, reopens, plays back, replays, exports, imports, and deletes past sessions.
-tags: [sessions, storage, library, replay, playback, export, import, api]
+description: Where every session is stored, what each file holds, and how the recordings library lists, names, searches, reopens, plays back, replays, exports, imports, and deletes past sessions — plus the seal that proves a recording unchanged (signature and trusted timestamps) and the signed transcript export.
+tags: [sessions, storage, library, replay, playback, export, import, api, seal, proof, timestamps, transcript]
 source:
   - src/store/sessionStore.ts
   - src/paths.ts
@@ -11,6 +11,9 @@ source:
   - src/store/transfer.ts
   - src/store/zip.ts
   - web/src/transfer.ts
+  - src/store/seal.ts
+  - src/store/timestamp.ts
+  - src/store/transcript.ts
 ---
 
 # Recordings
@@ -33,6 +36,7 @@ Every session — live or replay — is kept as one folder of plain files. There
 | `speakers.json` | Final speaker list, written at session end |
 | `meta.json` | Library metadata: `name`, `notes` (only if set) |
 | `imported.json` | Only for an imported recording: when, from which file, and the file's manifest (see [Export and import](#export-and-import)) |
+| `seal.json`, `transcript.jsonl` | The recording's seal and its frozen transcript, written when it ends (or at its first export, for a recording from before seals): see [Proof of a recording](#proof-of-a-recording) |
 | `chats.jsonl` | The chat window's chats, messages, and calls with cost — written live and after the recording ended, since a recording can be chatted about (see [Chat](chat.md)) |
 
 Keys are redacted from every file and event.
@@ -73,7 +77,7 @@ Inside:
 | Entry | Holds |
 | --- | --- |
 | `manifest.json` (first) | `format: "tattle-recording"` (`"conversation-assistant-recording"` and `"podcast-assistant-recording"`, from the app's earlier names, still import), `formatVersion` (1), `app` (name and version that **exported** it), `exportedAt`; `recording` (`id`, `name`, `startedAt`, `durationMs`, `mode`, `recordedWith`: the version that **recorded** it, from `session.json`, or null before 0.3.0); `audio` (`choice`, `format`, `bitrate`, and each stream's sample count); `chats`; `files` |
-| `data/*` | The session's files, deflated: `session.json`, `meta.json`, `speakers.json`, every JSONL file; `chats.jsonl` only when chosen. `events.jsonl` leaves out the folder the recording was made in (`dir`: in the Mac app it is under the home folder, which names the user); opening the recording fills in the importer's own |
+| `data/*` | The session's files, deflated: `session.json`, `meta.json`, `speakers.json`, every JSONL file, `seal.json` and `transcript.jsonl` (byte for byte, so the importer can check them); `chats.jsonl` only when chosen. `events.jsonl` leaves out the folder the recording was made in (`dir`: in the Mac app it is under the home folder, which names the user); opening the recording fills in the importer's own |
 | `audio/host.m4a`, `audio/remote.m4a` | Compressed audio (the default), stored |
 | `audio/host.wav`, `audio/remote.wav` | Or the original WAVs, stored |
 
@@ -84,12 +88,15 @@ Inside:
 | Compressed | 56.7 MB, exported in 11 s | AAC at 32 kbps per stream through macOS's own `afconvert`. Decoded back, each stream has exactly its original sample count and no time shift (checked by cross-correlation), so transcript times still match the audio. |
 | Original | ≈ 452 MB | The WAVs byte for byte |
 | No audio | ≈ 3 MB | Fits email; the importer gets no playback or replay |
+| Transcript only | ≈ 40 KB an hour | Not a `.tattle` file: the signed text record (see [Transcript export](#transcript-export)) |
+
+With **Original** audio the seal still holds after import, byte for byte; with **Compressed** audio the two WAVs no longer match their fingerprints (AAC is lossy), though everything else does. To hand someone checkable proof, export the original audio.
 
 - **Chats are left out by default:** they are the exporter's own questions. The Export window has a switch to include them.
 - Email usually takes files up to about 25 MB and WhatsApp documents up to 2 GB; the Export window says which applies.
 
 **Export**, from the header (a recording on screen) or a row of the Recordings window:
-1. `POST /api/sessions/:id/export { audio: "compressed" | "original" | "none", chats }` writes the file to the system's temporary folder and returns `{ token, fileName, bytes }`. Errors show in the window.
+1. `POST /api/sessions/:id/export { audio: "compressed" | "original" | "none", chats }` writes the file to the system's temporary folder and returns `{ token, fileName, bytes }`; `{ format: "transcript", timestamps }` writes the [transcript](#transcript-export) instead. A recording with no seal yet is sealed first (a seal that fails is logged and the `.tattle` export goes ahead). Errors show in the window.
 2. The page then downloads `GET /api/exports/:token` (`Content-Disposition: attachment`), usually to Downloads; the Mac app always saves it there, as `<name> (2).tattle` and so on when the name is taken. The file is deleted once sent, or after 15 minutes.
 3. A session still on air cannot be exported (409).
 
@@ -112,6 +119,30 @@ A two-hour show imports in about 4 s.
 
 **Delete** removes a recording's folder for good, after an in-page confirmation (`DELETE /api/sessions/:id`). The running session cannot be deleted (409). Deleting the recording on screen opens the one listed below it (or above, if it was the last), or clears the view if none is left.
 
+## Proof of a recording
+
+No file can prove that a conversation happened, or that a transcript is right. What Tattle can prove, and how (`src/store/seal.ts`, `src/store/timestamp.ts`):
+
+- **Integrity.** When a session ends, the engine seals it (`Engine.sealEnded`, after the session's run resolves; `engine.sealed(id)` resolves once it is written). It freezes the transcript into `transcript.jsonl` (the last version of each utterance in `events.jsonl`, in the order it was said, with the speaker's name at that moment, fillers included) and writes `seal.json` with the SHA-256 and size of `host.wav`, `remote.wav`, `transcript.jsonl`, `utterances.jsonl`, and `transcriptions.jsonl`: the files that never change after a recording ends. `events.jsonl`, `speakers.json`, and `meta.json` are left out, because renames, merges, chats, and names change them later.
+- **Origin.** The seal's payload (kept as the exact JSON string that was signed) is signed with this Mac's own key: ECDSA P-256 with SHA-256, which every `openssl` can verify, LibreSSL included. The key is made on first use in `~/Library/Application Support/Tattle/signing-key.json` (0600, in a 0700 folder; `TATTLE_SIGNING_KEY` overrides the path, and the tests use it). It identifies a Tattle install, not a person; its fingerprint is the SHA-256 of the public key, shown in groups of four. A key file that cannot be read is an error, never replaced: a new key would make every earlier seal look signed by someone else.
+- **Existence in time.** With **trusted timestamps** on (`trustedTimestamps` in `settings.json`, off by default), the payload's SHA-256 is sent to three independent RFC 3161 authorities in three countries (DigiCert, GlobalSign, FreeTSA), at once, with a 15 s timeout. Each returns a signed token saying the hash existed at that time. Only the 32-byte hash leaves the Mac. They are free and need no account. A failure never stops the seal: its reasons are kept in `timestampFailures`, and a seal without timestamps gets them at the next export where they are on (a later time still proves the files existed by then).
+
+A recording from before seals is sealed at its first export (`when: "export"`), and says how long after it was recorded. A seal that fails at the end of a session becomes an `error` event (`component: "seal"`), and the recording itself is complete either way. `checkSeal(dir)` rechecks the signature and every file.
+
+The switch is in the Export window (Transcript only → **Trusted timestamps**). The choice is saved with the export, and it applies to the recordings that follow, as they end.
+
+## Transcript export
+
+**Transcript only**, the fourth choice in the Export window, writes `<name> transcript.txt` (`src/store/transcript.ts`): a plain UTF-8 record meant to be read, filed, or shown as evidence, alongside the original audio.
+
+1. **A header:** name, id, start in local time with its UTC offset and time zone (and in ISO), duration, kind (live or replay), speakers (current names, with the name each had when sealed if it changed since), transcription engine, the versions that recorded and exported it, and when it was exported.
+2. **The transcript:** one line per utterance, `[0:12:34 | 14:03:15] Nic: …` (time since the start, then local time). A line that starts a new day is preceded by the date. Line breaks inside a line become spaces.
+3. **An integrity record:** when and how the recording was sealed, the key's fingerprint (this Mac or another), the timestamps or why there are none, every sealed file's size and SHA-256, and what the record proves and does not prove (who the speakers are, recognition accuracy, consent, staging, who holds the key).
+4. **How to verify,** with `openssl` and no Tattle: the document's signature, the seal's, the files (from an export with original audio), and the timestamps (`openssl ts -verify`, which needs OpenSSL 3; see [Gotchas](gotchas.md#export-and-import)). The first two sets of commands are the `VERIFY_DOCUMENT` and `VERIFY_SEAL` constants, which the tests run as printed, under both LibreSSL and OpenSSL 3.
+5. **The seal's data** (`Seal-Payload`, `Seal-Signature`, `Seal-Public-Key`, `Seal-Timestamp-<authority>` lines), then the **signature block**: `-----BEGIN TATTLE SIGNATURE-----`, this Mac's public key, an ECDSA signature over every byte before the block, and the document's own `Timestamp-<authority>` tokens over the SHA-256 of those same bytes (or a `Timestamps:` line saying why there are none).
+
+The document's words are signed when it is exported; the seal ties the recording's files, its frozen transcript included, to when it ended. Opening and re-saving the file in an editor can change invisible characters and break its signature, and the document says so.
+
 ## API
 
 | Method | Route | Does |
@@ -124,9 +155,9 @@ A two-hour show imports in about 4 s.
 | DELETE | `/api/sessions/:id` | Deletes the recording's folder → `{ deleted }`; 409 for the running session |
 | POST | `/api/sessions/:id/open` | Reopen read-only → `{ sessionId, events }` (`events` is the number of events loaded); 409 while a session runs |
 | POST | `/api/session/start` | `{ mode: "replay", sessionId, speed }` replays a recording; `name` names the new session |
-| GET | `/api/sessions/:id/export` | What an export would weigh: `{ fileName, recordedWith, app, bytes: { compressed, original, none }, chats, hasAudio }` |
-| POST | `/api/sessions/:id/export` | `{ audio, chats }` → `{ token, fileName, bytes }`; 409 for a session on air |
-| GET | `/api/exports/:token` | The `.tattle` file, as a download |
+| GET | `/api/sessions/:id/export` | What an export would weigh: `{ fileName, transcriptFileName, recordedWith, app, bytes: { compressed, original, none, transcript }, chats, hasAudio, seal: { when, sealedAt, timestamps } \| null, trustedTimestamps }` |
+| POST | `/api/sessions/:id/export` | `{ audio, chats }` or `{ format: "transcript", timestamps }` → `{ token, fileName, bytes }`; `timestamps` is saved as the setting; 400 for another `format` or a `timestamps` that is not a boolean; 409 for a session on air |
+| GET | `/api/exports/:token` | The `.tattle` or transcript file, as a download |
 | POST | `/api/sessions/import` | The file's bytes (`X-File-Name` header) → `{ summary, already }`, plus `copyToken` when the library already had it |
 | POST | `/api/sessions/import/:copyToken` | `{ name }` → imports that kept upload again as a named copy → `{ summary, already: false }`; 404 once used or after 15 minutes |
 

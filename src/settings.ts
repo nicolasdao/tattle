@@ -1,4 +1,4 @@
-// The user's settings that are not keys: today, which engine transcribes. Saved next to credentials.json, in
+// The user's settings that are not keys: which engine transcribes, and whether seals get trusted timestamps. Saved next to credentials.json, in
 // ~/Library/Application Support/Tattle/settings.json, shared by the Mac app and npm run serve. See docs/transcription.md.
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -8,6 +8,8 @@ import { appleSpeechStatus, installAppleModel, type AppleStatus } from "./transc
 
 export interface Settings {
   transcriptionEngine?: TranscriptionEngine;
+  /** Seals are timestamped by independent authorities, which receive only a hash (docs/recordings.md § Proof of a recording). */
+  trustedTimestamps?: boolean;
 }
 
 /** tests override it */
@@ -23,7 +25,11 @@ export class SettingsStore {
     try {
       const json = JSON.parse(readFileSync(this.path, "utf8"));
       const e = json?.transcriptionEngine;
-      return e === "apple" || e === "openai" ? { transcriptionEngine: e } : {};
+      const t = json?.trustedTimestamps;
+      return {
+        ...(e === "apple" || e === "openai" ? { transcriptionEngine: e } : {}),
+        ...(typeof t === "boolean" ? { trustedTimestamps: t } : {}),
+      };
     } catch {
       console.error(`${this.path} is not valid JSON: ignored`);
       return {};

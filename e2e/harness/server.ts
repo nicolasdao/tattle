@@ -29,9 +29,10 @@ delete process.env.OPENAI_API_KEY;
 delete process.env.OPENROUTER_API_KEY;
 
 const tmp = process.env.E2E_TMP;
-if (!tmp || !process.env.HOME?.startsWith(tmp) || !process.env.TATTLE_CREDENTIALS?.startsWith(tmp) || !process.env.TATTLE_SETTINGS?.startsWith(tmp)) {
+if (!tmp || !process.env.HOME?.startsWith(tmp) || !process.env.TATTLE_CREDENTIALS?.startsWith(tmp) || !process.env.TATTLE_SETTINGS?.startsWith(tmp)
+  || !process.env.TATTLE_SIGNING_KEY?.startsWith(tmp)) {
   // never run against the real Application Support folder (real keys and recordings)
-  console.error("E2E harness: set E2E_TMP, and HOME, TATTLE_CREDENTIALS and TATTLE_SETTINGS inside it (e2e/fixtures.ts does)");
+  console.error("E2E harness: set E2E_TMP, and HOME, TATTLE_CREDENTIALS, TATTLE_SETTINGS and TATTLE_SIGNING_KEY inside it (e2e/fixtures.ts does)");
   process.exit(2);
 }
 

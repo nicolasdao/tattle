@@ -35,7 +35,7 @@ export function isolatedFolders(opts: { keys?: boolean } = {}) {
   for (const [k, v] of Object.entries(process.env)) if (v !== undefined && !/^(OPENAI_API_KEY|OPENROUTER_API_KEY|NODE_OPTIONS|TATTLE_.*)$/.test(k)) env[k] = v;
   Object.assign(env, {
     HOME: home, TMPDIR: join(tmp, "tmp"),
-    TATTLE_CREDENTIALS: credentials, TATTLE_SETTINGS: join(home, "settings.json"), TATTLE_LABEL_SETS: join(home, "labels"),
+    TATTLE_CREDENTIALS: credentials, TATTLE_SETTINGS: join(home, "settings.json"), TATTLE_SIGNING_KEY: join(home, "signing-key.json"), TATTLE_LABEL_SETS: join(home, "labels"),
     // never start the on-device transcription helper (or install its model): the engine transcribes with OpenAI
     TATTLE_FORCE_NO_APPLE_SPEECH: "1",
   });

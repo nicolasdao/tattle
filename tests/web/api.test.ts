@@ -125,6 +125,7 @@ describe("every command's method, path and body", () => {
     ["stopChat", () => api.stopChat("chat_1"), "POST", "/api/chats/chat_1/stop", undefined],
     ["exportInfo", () => api.exportInfo("s1"), "GET", "/api/sessions/s1/export", undefined],
     ["exportPrepare", () => api.exportPrepare("s1", "none", true), "POST", "/api/sessions/s1/export", { audio: "none", chats: true }],
+    ["exportTranscript", () => api.exportTranscript("s1", true), "POST", "/api/sessions/s1/export", { format: "transcript", timestamps: true }],
     ["importCopy", () => api.importCopy("t/1", "Pilot (copy)"), "POST", "/api/sessions/import/t%2F1", { name: "Pilot (copy)" }],
     ["rollback", () => api.rollback("s1@1"), "POST", "/api/s1/rollback", { version: "s1@1" }],
     ["labelSets", () => api.labelSets(), "GET", "/api/label-sets", undefined],

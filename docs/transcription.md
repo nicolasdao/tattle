@@ -34,7 +34,7 @@ Measured on a 1 h 57 min episode against OpenAI's text (fillers and number words
 
 ## Choosing the engine — `src/settings.ts`
 
-The engine is a user setting, not config: `~/Library/Application Support/Tattle/settings.json` holds `{ "transcriptionEngine": "apple" | "openai" }`, written atomically like `credentials.json` and shared by the Mac app and `npm run serve` (`TATTLE_SETTINGS` overrides the path; tests use it). It changes in **Settings → Transcription** (cog menu), never mid-session: `PUT /api/transcription` answers 409 while a session is on air, and a session records the engine it ran with in `session.json` and `session.started` (`transcription: { engine, locale }` or `{ engine, model }`).
+The engine is a user setting, not config: `~/Library/Application Support/Tattle/settings.json` holds `{ "transcriptionEngine": "apple" | "openai" }` (and `trustedTimestamps`, see [Recordings](recordings.md#proof-of-a-recording)), written atomically like `credentials.json` and shared by the Mac app and `npm run serve` (`TATTLE_SETTINGS` overrides the path; tests use it). It changes in **Settings → Transcription** (cog menu), never mid-session: `PUT /api/transcription` answers 409 while a session is on air, and a session records the engine it ran with in `session.json` and `session.started` (`transcription: { engine, locale }` or `{ engine, model }`).
 
 At boot, `resolveEngine` (pure, unit-tested) decides:
 

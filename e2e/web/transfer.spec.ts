@@ -37,3 +37,33 @@ test("exports with the original audio, and imports the file back as a copy that 
   const list = await page.evaluate(() => fetch("/api/sessions").then((r) => r.json()));
   expect(list.map((s: { id: string }) => s.id).sort()).toEqual(["20260924-100000", "20260924-100000-2", "20260925-090000"]);
 });
+
+// docs/recordings.md § Transcript export: the signed text file, through the page and the real engine
+test("exports the transcript only, as a signed text file that carries the recording's seal", async ({ page }) => {
+  await open(page, "/recordings/20260924-100000");
+  await page.locator("#export-btn").click();
+  await page.getByRole("radio", { name: /Transcript only/ }).click();
+  const stamps = page.getByRole("switch", { name: /Trusted timestamps/ });
+  await expect(stamps).toBeVisible();
+  await expect(stamps).toHaveAttribute("aria-checked", "false");
+  await expect(page.getByRole("switch", { name: /Include my chats/ })).toBeHidden();
+  await expect(page.locator("#export-body .start-summary")).toContainText("transcript.txt");
+  await expect(page.locator("#export-body .start-summary")).toContainText("Not sealed yet");
+  const downloading = page.waitForEvent("download");
+  await page.locator("#dlg-export").getByRole("button", { name: "Export", exact: true }).click();
+  const download = await downloading;
+  expect(download.suggestedFilename()).toMatch(/ transcript\.txt$/);
+  const file = test.info().outputPath("transcript.txt");
+  await download.saveAs(file);
+  const text = (await import("node:fs")).readFileSync(file, "utf8");
+  expect(text).toMatch(/^TATTLE CONVERSATION RECORD\n/);
+  expect(text).toContain("END OF TRANSCRIPT: 2 lines");
+  expect(text).toMatch(/^Seal-Payload: \{"format":"tattle-seal"/m);
+  expect(text).toMatch(/-----BEGIN TATTLE SIGNATURE-----\n[\s\S]*\nSignature: [A-Za-z0-9+/=]+\n-----END TATTLE SIGNATURE-----\n$/);
+  await expect(page.locator(".toast.ok")).toContainText("Keep the recording's original audio with it");
+
+  // sealed now: the window says so the next time
+  await page.locator("#export-btn").click();
+  await page.getByRole("radio", { name: /Transcript only/ }).click();
+  await expect(page.locator("#export-body .start-summary")).toContainText("Sealed at its first export");
+});

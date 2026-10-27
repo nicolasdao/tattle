@@ -23,9 +23,12 @@ import { rm } from "node:fs/promises";
 import {
   discard, exportEstimate, exportFileName, exportRecording, importRecording, MAX_UPLOAD_BYTES, saveUpload, TransferError, type AudioChoice,
 } from "../store/transfer.ts";
+import { ensureSeal, readSeal, sealRecording, SigningKey, type SealPayload, type Stamp } from "../store/seal.ts";
+import { requestTimestamps } from "../store/timestamp.ts";
+import { exportTranscript, transcriptFileName } from "../store/transcript.ts";
 import { appInfo } from "../version.ts";
 import { KeyError, KeySetup, KeyStore, type KeyName } from "../keys.ts";
-import { TranscriptionSettings, type TranscriptionStatus } from "../settings.ts";
+import { SettingsStore, TranscriptionSettings, type TranscriptionStatus } from "../settings.ts";
 import { appPaths, migrateAppSupportDir } from "../paths.ts";
 import { licenses } from "../licenses.ts";
 import { isMain } from "../entry.ts";
@@ -34,8 +37,11 @@ import { isMain } from "../entry.ts";
 export interface TransferApi {
   /** What an export would contain and weigh. */
   info(id: string): unknown;
-  /** Writes the export file; the download follows with `file(token)`. */
-  prepare(id: string, body: { audio?: unknown; chats?: unknown }): Promise<{ token: string; fileName: string; bytes: number }>;
+  /**
+   * Writes the export file; the download follows with `file(token)`. `format`: a `.tattle` recording (the default) or
+   * the signed transcript; `timestamps` turns trusted timestamps on or off, and is saved for the seals that follow.
+   */
+  prepare(id: string, body: { format?: unknown; audio?: unknown; chats?: unknown; timestamps?: unknown }): Promise<{ token: string; fileName: string; bytes: number }>;
   file(token: string): { path: string; fileName: string };
   importFile(body: AsyncIterable<Buffer>, fileName: string | null): Promise<unknown>;
   /** Imports a file the library already had, again, as a copy under `name` (the upload was kept by `importFile`). */
@@ -206,6 +212,10 @@ export interface EngineOptions {
   transcription?: TranscriptionSettings;
   /** The label-set library; by default the built-in sets and the user's folder (src/paths.ts). */
   labelSets?: LabelSetStore;
+  /** Where trusted timestamps are switched on (settings.json by default). */
+  settings?: SettingsStore;
+  /** This Mac's signing key for seals and transcripts; by default read, or made, on first use. */
+  signingKey?: SigningKey;
 }
 
 /** The engine: owns one session at a time, its event bus, and the host commands. */
@@ -235,6 +245,42 @@ export class Engine implements EngineApi {
   }
 
   private readonly exports = new Map<string, { path: string; fileName: string }>();
+  /** Seals being made as recordings end, by recording id: an export waits for its recording's. */
+  private readonly seals = new Map<string, Promise<void>>();
+  private signingKey: SigningKey | null = null;
+  private settingsStore: SettingsStore | null = null;
+
+  private get settings(): SettingsStore {
+    return (this.settingsStore ??= this.opts.settings ?? new SettingsStore());
+  }
+
+  private key(): SigningKey {
+    return (this.signingKey ??= this.opts.signingKey ?? SigningKey.load());
+  }
+
+  /** Trusted timestamps, when they are on: only the hash leaves the Mac (docs/recordings.md § Proof of a recording). */
+  private stamp(): Stamp | undefined {
+    if (this.settings.read().trustedTimestamps !== true) return undefined;
+    return (h) => requestTimestamps(h, { fetch: (...a) => (this.opts.fetch ?? fetch)(...a) });
+  }
+
+  /** Resolves once the recording's seal, if one is being made, is written (or has failed). */
+  sealed(id: string): Promise<void> {
+    return this.seals.get(id) ?? Promise.resolve();
+  }
+
+  /** Seals a recording as it ends. A failure is an error event: the recording itself is complete either way. */
+  private sealEnded(id: string, dir: string) {
+    const p = (async () => {
+      try {
+        await sealRecording(dir, { key: this.key(), app: appInfo(), when: "ended", stamp: this.stamp() });
+      } catch (e) {
+        this.bus.emit("error", { component: "seal", message: `could not seal the recording: ${e instanceof Error ? e.message : String(e)}` });
+      }
+    })();
+    this.seals.set(id, p);
+    void p.finally(() => this.seals.delete(id));
+  }
   /** Uploads of a recording the library already had, kept for a possible copy. */
   private readonly uploads = new Map<string, { path: string; fileName: string | null }>();
 
@@ -242,15 +288,43 @@ export class Engine implements EngineApi {
     info: (id) => {
       const dir = this.libraryCall(() => this.library.dirOf(id));
       const s = this.library.get(id);
-      return { id, name: s.name, fileName: exportFileName(s.name, id), recordedWith: s.appVersion, app: appInfo(), ...exportEstimate(dir) };
+      const est = exportEstimate(dir);
+      const seal = readSeal(dir);
+      const payload: SealPayload | null = seal ? JSON.parse(seal.payload) : null;
+      const trustedTimestamps = this.settings.read().trustedTimestamps === true;
+      // each line, plus the integrity record (about 9 KB), plus six timestamp tokens of about 8 KB when they are on
+      const lines = this.library.transcript(id).reduce((t, l) => t + Buffer.byteLength(l.text) + Buffer.byteLength(l.speaker) + 24, 0);
+      return {
+        id, name: s.name, fileName: exportFileName(s.name, id), transcriptFileName: transcriptFileName(s.name, id),
+        recordedWith: s.appVersion, app: appInfo(), ...est,
+        bytes: { ...est.bytes, transcript: lines + 9_000 + (trustedTimestamps ? 48_000 : 0) },
+        seal: payload && seal ? { when: payload.when, sealedAt: payload.sealedAt, timestamps: seal.timestamps.map((t) => t.authority) } : null,
+        trustedTimestamps,
+      };
     },
     prepare: async (id, body) => {
       const dir = this.libraryCall(() => this.library.dirOf(id));
       if (this.session && this.session.id === id && this.session.status !== "ended") throw new ApiError(409, "stop the session before exporting it");
+      const format = body?.format ?? "tattle";
+      if (format !== "tattle" && format !== "transcript") throw new ApiError(400, "format must be tattle or transcript");
+      if (body?.timestamps !== undefined && typeof body.timestamps !== "boolean") throw new ApiError(400, "timestamps must be true or false");
       const audio = (body?.audio ?? "compressed") as AudioChoice;
-      if (!["compressed", "original", "none"].includes(audio)) throw new ApiError(400, "audio must be compressed, original, or none");
+      if (format === "tattle" && !["compressed", "original", "none"].includes(audio)) throw new ApiError(400, "audio must be compressed, original, or none");
       if (body?.chats !== undefined && typeof body.chats !== "boolean") throw new ApiError(400, "chats must be true or false");
-      const r = await this.transferCall(() => exportRecording(dir, id, { audio, chats: body?.chats === true, app: appInfo() }));
+      if (typeof body?.timestamps === "boolean") this.settings.save({ trustedTimestamps: body.timestamps });
+      await this.sealed(id);
+      let r: { path: string; fileName: string; bytes: number };
+      if (format === "transcript") {
+        const s = this.library.get(id);
+        r = await this.transferCall(() => exportTranscript(dir, id, {
+          key: this.key(), app: appInfo(), name: s.name, durationMs: s.durationMs, nameOf: this.library.speakerNames(id), stamp: this.stamp(),
+        }));
+      } else {
+        // a recording from before seals is sealed now, so the file carries its seal; a seal that fails never stops the export
+        await ensureSeal(dir, { key: this.key(), app: appInfo(), stamp: this.stamp() })
+          .catch((e) => console.error(`could not seal ${id}: ${e instanceof Error ? e.message : String(e)}`));
+        r = await this.transferCall(() => exportRecording(dir, id, { audio, chats: body?.chats === true, app: appInfo() }));
+      }
       const token = randomUUID();
       this.exports.set(token, { path: r.path, fileName: r.fileName });
       // a download not collected within 15 minutes is deleted
@@ -555,7 +629,10 @@ export class Engine implements EngineApi {
     const s = this.session;
     // When it ends, the session becomes a recording: the page shows it exactly as a reopened one.
     s.run()
-      .then(() => { if (this.session === s) { this.session = null; this.archived = s.id; } })
+      .then(() => {
+        if (this.session === s) { this.session = null; this.archived = s.id; }
+        this.sealEnded(s.id, s.store.dir);
+      })
       .catch((e) => console.error("session failed:", e));
     if (mode === "live") this.followOutput(); // after session.started: the helper may already have said where the call plays
     // after run() has written session.json, which makes the folder a recording the library can name

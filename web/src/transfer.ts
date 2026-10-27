@@ -10,6 +10,8 @@ const EXTENSION = ".tattle";
 /** Exports made under the app's earlier names, Podcast Assistant and Conversation Assistant, still import. */
 const IMPORTABLE = [EXTENSION, ".conversation-recording", ".podcast-recording"];
 type Audio = "compressed" | "original" | "none";
+/** What the Export window makes: a `.tattle` file with that audio, or the signed transcript. */
+type Choice = Audio | "transcript";
 
 let getState: () => State = () => { throw new Error("bindTransfer first"); };
 
@@ -44,12 +46,14 @@ export async function openExport(id: string) {
     return replace(body, h("p", { class: "error-text" }, e instanceof Error ? e.message : String(e)));
   }
   replace($("#export-sub"), info.name ?? id);
-  let audio: Audio = info.hasAudio ? "compressed" : "none";
+  let audio: Choice = info.hasAudio ? "compressed" : "none";
   let chats = false;
-  const choices: [Audio, string, string][] = [
+  let stamps = info.trustedTimestamps;
+  const choices: [Choice, string, string][] = [
     ["compressed", "Compressed audio", "Sounds the same for speech; the best way to share it."],
     ["original", "Original audio", "Exactly as recorded, lossless; about eight times bigger."],
     ["none", "No audio", "Transcript, timeline, fact-checks, and speakers; no playback or replay."],
+    ["transcript", "Transcript only", "A signed text file: who said what, and when. To read, or keep as a record."],
   ];
   const opts = h("div", { class: "choice-list", role: "radiogroup", "aria-label": "Audio" });
   const chatSwitch = h("button", { class: "feat compact", role: "switch", "aria-checked": "false", disabled: info.chats === 0 },
@@ -57,36 +61,46 @@ export async function openExport(id: string) {
       h("span", {}, info.chats ? `${info.chats} chat${info.chats === 1 ? "" : "s"} about this recording. Off by default: they are your own questions.` : "No chats about this recording.")),
     h("span", { class: "toggle", "aria-hidden": "true" }, h("i", {})));
   chatSwitch.addEventListener("click", () => { chats = !chats; chatSwitch.setAttribute("aria-checked", String(chats)); });
+  const stampSwitch = h("button", { class: "feat compact", role: "switch", "aria-checked": String(stamps), hidden: true },
+    h("span", { class: "feat-text" }, h("b", {}, "Trusted timestamps"),
+      h("span", {}, "DigiCert, GlobalSign, and FreeTSA certify when the recording existed. Only a fingerprint leaves this Mac, never its words or audio. Stays on for recordings to come, stamped as they end.")),
+    h("span", { class: "toggle", "aria-hidden": "true" }, h("i", {})));
+  stampSwitch.addEventListener("click", () => { stamps = !stamps; stampSwitch.setAttribute("aria-checked", String(stamps)); });
   const drawChoices = () => replace(opts, choices.map(([k, title, text]) => {
-    const disabled = k !== "none" && !info.hasAudio;
+    const disabled = (k === "compressed" || k === "original") && !info.hasAudio;
     return h("button", {
       class: "choice", role: "radio", "aria-checked": String(audio === k), disabled,
-      onclick: () => { audio = k; drawChoices(); drawFoot(); },
+      onclick: () => { audio = k; drawChoices(); drawFoot(); drawSwitches(); },
     },
       h("span", { class: "radio", "aria-hidden": "true" }),
       h("span", { class: "feat-text" }, h("b", {}, title), h("span", {}, disabled ? "This recording has no audio." : text)),
       h("span", { class: "choice-size" }, disabled ? "" : `≈ ${size(info.bytes[k])}`));
   }));
+  const drawSwitches = () => { chatSwitch.hidden = audio === "transcript"; stampSwitch.hidden = audio !== "transcript"; };
   const foot = h("p", { class: "start-summary" });
   const drawFoot = () => replace(foot,
-    h("b", {}, info.fileName), h("br", {}),
+    h("b", {}, audio === "transcript" ? info.transcriptFileName : info.fileName), h("br", {}),
     `About ${size(info.bytes[audio])}: ${fits(info.bytes[audio])}.`, h("br", {}),
-    `${info.recordedWith ? `Recorded with v${info.recordedWith}` : "Recorded before the app noted its version"} · exported with v${info.app.version}.`);
+    audio === "transcript" ? sealLine(info.seal)
+      : `${info.recordedWith ? `Recorded with v${info.recordedWith}` : "Recorded before the app noted its version"} · exported with v${info.app.version}.`);
   const go = h("button", { class: "btn primary" }, "Export");
   const status = h("p", { class: "note", "aria-live": "polite" });
   go.addEventListener("click", async () => {
     go.disabled = true;
     replace(go, "Preparing…");
-    replace(status, audio === "compressed" ? "Compressing the audio: a few seconds per hour of show." : "");
+    replace(status, audio === "compressed" ? "Compressing the audio: a few seconds per hour of show."
+      : audio === "transcript" && stamps ? "Asking the timestamp authorities: a few seconds." : "");
     try {
-      const r = await api.exportPrepare(id, audio, chats);
+      const r = audio === "transcript" ? await api.exportTranscript(id, stamps) : await api.exportPrepare(id, audio, chats);
       // the browser saves it, usually to Downloads
       const a = h("a", { href: `/api/exports/${r.token}`, download: r.fileName, hidden: true });
       document.body.append(a);
       a.click();
       a.remove();
       d.close();
-      toast(`Exported ${r.fileName} (${size(r.bytes)}): check your Downloads folder, then send it as a document.`, "ok");
+      toast(audio === "transcript"
+        ? `Exported ${r.fileName} (${size(r.bytes)}): check your Downloads folder. Keep the recording's original audio with it: the transcript's seal points to it.`
+        : `Exported ${r.fileName} (${size(r.bytes)}): check your Downloads folder, then send it as a document.`, "ok");
     } catch (e) {
       replace(status, h("span", { class: "error-text" }, e instanceof Error ? e.message : String(e)));
       go.disabled = false;
@@ -95,11 +109,19 @@ export async function openExport(id: string) {
   });
   drawChoices();
   drawFoot();
-  replace(body, opts, chatSwitch, foot,
+  drawSwitches();
+  replace(body, opts, chatSwitch, stampSwitch, foot,
     h("p", { class: "note" }, `Whoever you send it to imports it with Tattle: Import in the header, or drop the file on the page.`),
     status,
     h("div", { class: "row end" }, h("button", { class: "btn", onclick: () => d.close() }, "Cancel"), go));
   go.focus();
+}
+
+/** Where the recording's seal stands (docs/recordings.md § Proof of a recording). */
+function sealLine(seal: ExportInfo["seal"]): string {
+  if (!seal) return "Not sealed yet: it is sealed as it is exported, a signed and dated record of its files.";
+  const at = new Date(seal.sealedAt).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return `Sealed ${seal.when === "ended" ? "when it ended" : "at its first export"}, ${at} · ${seal.timestamps.length ? `timestamped by ${seal.timestamps.join(", ")}` : "not timestamped"}.`;
 }
 
 // ---------- import ----------

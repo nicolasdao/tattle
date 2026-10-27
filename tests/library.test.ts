@@ -282,6 +282,20 @@ describe("the library, case by case", () => {
     expect(lib.transcript("20260925-120000").find((l) => l.id === "u_ghost")!.speaker).toBe("Old name");
   });
 
+  test("speakerNames: each speaker's current name, renames and merges followed; null for one never named", () => {
+    const root = tmpDir("lib-");
+    bare(root, "20260925-120000", { startedAt: "x" }, [
+      E(1, "speaker.created", { id: "spk_1", displayName: "Speaker 1", stream: "host" }),
+      E(2, "speaker.created", { id: "spk_2", displayName: "Speaker 2", stream: "remote" }),
+      E(3, "speaker.created", { id: "spk_3", displayName: "Speaker 3", stream: "remote" }),
+      E(4, "speaker.updated", { id: "spk_2", displayName: "Sam" }),
+      E(5, "speaker.merged", { fromId: "spk_3", intoId: "spk_2" }),
+    ]);
+    const nameOf = new SessionLibrary(root).speakerNames("20260925-120000");
+    expect(["spk_1", "spk_2", "spk_3", "spk_9"].map(nameOf)).toEqual(["Speaker 1", "Sam", "Sam", null]);
+    expect(() => new SessionLibrary(root).speakerNames("nope")).toThrow();
+  });
+
   test("events: a session event naming another id is corrected, with its folder when it had one", () => {
     const root = tmpDir("lib-");
     const dir = bare(root, "20260925-120000-2", { startedAt: "x" }, [

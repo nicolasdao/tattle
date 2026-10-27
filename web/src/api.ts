@@ -128,8 +128,11 @@ export interface KeyCheck { ok: boolean; message: string; warning?: string }
 export interface SaveKeysResult extends SetupStatus { saved: boolean; checks: Partial<Record<KeyName, KeyCheck>> }
 
 export interface ExportInfo {
-  id: string; name: string | null; fileName: string; recordedWith: string | null; app: { name: string; version: string };
-  bytes: Record<"compressed" | "original" | "none", number>; chats: number; hasAudio: boolean;
+  id: string; name: string | null; fileName: string; transcriptFileName: string; recordedWith: string | null; app: { name: string; version: string };
+  bytes: Record<"compressed" | "original" | "none" | "transcript", number>; chats: number; hasAudio: boolean;
+  /** The recording's seal (docs/recordings.md § Proof of a recording), or null before it has one. */
+  seal: { when: "ended" | "export"; sealedAt: string; timestamps: string[] } | null;
+  trustedTimestamps: boolean;
 }
 /** `copyToken`: when the library already had it, the upload is kept for 15 minutes so it can be imported again as a copy. */
 export interface LicenseComponent { title: string; license: string; body: string; files: string[] }
@@ -205,6 +208,9 @@ export const api = {
   exportInfo: (id: string) => call<ExportInfo>("GET", `/api/sessions/${encodeURIComponent(id)}/export`),
   exportPrepare: (id: string, audio: string, chats: boolean) =>
     call<{ token: string; fileName: string; bytes: number }>("POST", `/api/sessions/${encodeURIComponent(id)}/export`, { audio, chats }),
+  /** The signed transcript; `timestamps` is saved as the setting for the seals that follow. */
+  exportTranscript: (id: string, timestamps: boolean) =>
+    call<{ token: string; fileName: string; bytes: number }>("POST", `/api/sessions/${encodeURIComponent(id)}/export`, { format: "transcript", timestamps }),
   importRecording,
   importCopy: (token: string, name: string) => call<ImportResult>("POST", `/api/sessions/import/${encodeURIComponent(token)}`, { name }),
   rollback: (version: string) => call<{ active: string }>("POST", "/api/s1/rollback", { version }),

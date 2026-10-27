@@ -31,7 +31,7 @@
         "License",
         "Versioning"
       ],
-      "line_count": 257,
+      "line_count": 258,
       "links_to": [
         "CHANGELOG.md",
         "SECURITY.md",
@@ -259,7 +259,7 @@
         "Testing",
         "Test fixture"
       ],
-      "line_count": 131,
+      "line_count": 134,
       "links_to": [
         "docs/architecture.md",
         "docs/desktop.md",
@@ -405,7 +405,7 @@
     },
     {
       "dangling": false,
-      "description": "Where every session is stored, what each file holds, and how the recordings library lists, names, searches, reopens, plays back, replays, exports, imports, and deletes past sessions.",
+      "description": "Where every session is stored, what each file holds, and how the recordings library lists, names, searches, reopens, plays back, replays, exports, imports, and deletes past sessions — plus the seal that proves a recording unchanged (signature and trusted timestamps) and the signed transcript export.",
       "has_frontmatter": true,
       "headings": [
         "Recordings",
@@ -413,13 +413,16 @@
         "The library — `src/store/library.ts`",
         "Open vs Replay",
         "Export and import",
+        "Proof of a recording",
+        "Transcript export",
         "API"
       ],
-      "line_count": 135,
+      "line_count": 166,
       "links_to": [
         "docs/architecture.md",
         "docs/chat.md",
         "docs/desktop.md",
+        "docs/gotchas.md",
         "docs/rehearsal.md",
         "docs/transcription.md"
       ],
@@ -435,7 +438,10 @@
         "src/server/audio.ts",
         "src/store/transfer.ts",
         "src/store/zip.ts",
-        "web/src/transfer.ts"
+        "web/src/transfer.ts",
+        "src/store/seal.ts",
+        "src/store/timestamp.ts",
+        "src/store/transcript.ts"
       ],
       "source_unresolved": [],
       "tags": [
@@ -446,7 +452,11 @@
         "playback",
         "export",
         "import",
-        "api"
+        "api",
+        "seal",
+        "proof",
+        "timestamps",
+        "transcript"
       ],
       "toc": {
         "linked": false,
@@ -658,7 +668,7 @@
         "Coverage policy",
         "Rules for new tests"
       ],
-      "line_count": 144,
+      "line_count": 145,
       "links_to": [
         "CLAUDE.md",
         "docs/architecture.md",

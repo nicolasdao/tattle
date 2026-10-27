@@ -22,6 +22,7 @@ export async function startHarness(env: Record<string, string> = {}): Promise<Ha
     PATH: process.env.PATH, LANG: process.env.LANG ?? "en_US.UTF-8", TZ: process.env.TZ,
     HOME: join(tmp, "home"), TMPDIR: join(tmp, "tmp"),
     TATTLE_CREDENTIALS: join(tmp, "home", "credentials.json"), TATTLE_SETTINGS: join(tmp, "home", "settings.json"),
+    TATTLE_SIGNING_KEY: join(tmp, "home", "signing-key.json"),
     TATTLE_LABEL_SETS: join(tmp, "labels"),
     E2E_TMP: tmp, E2E_PORT: "0", ...env,
   };

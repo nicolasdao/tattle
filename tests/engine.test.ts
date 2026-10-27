@@ -7,6 +7,9 @@ import { LabelSetError, type LabelSetStore } from "../src/labels/store.ts";
 import type { TranscriptionSettings } from "../src/settings.ts";
 import { setAppPaths } from "../src/paths.ts";
 import { writeZip } from "../src/store/zip.ts";
+import { checkSeal, readSeal, SigningKey, type SealPayload } from "../src/store/seal.ts";
+import { SettingsStore } from "../src/settings.ts";
+import { fakeTimestampFetch } from "./fakes/timestamp.ts";
 import { requireAssets } from "./helpers.ts";
 import {
   cleanTmpDirs, ev, FakeEmbedder, fakeOpenRouter, FakeSocket, fixtureSlice, makeSession, recording, silence, snapshotKeyEnv, tmpDir, transcribeOnlyServices, wavFile, withEnv,
@@ -571,6 +574,124 @@ describe("the chat's session", () => {
       const { engine } = offlineEngine();
       expect((engine.chat as unknown as { deps: { apiKey: string } }).deps.apiKey).toBe("");
     });
+  });
+});
+
+describe("proof of a recording through the engine (docs/recordings.md § Proof of a recording)", () => {
+  async function inTmp<T>(fn: (tmp: string) => Promise<T>): Promise<T> {
+    const tmp = tmpDir("os-tmp-");
+    return withEnv({ TMPDIR: tmp }, () => fn(tmp));
+  }
+  const rig = (o: { timestamps?: boolean; sessionsDir?: string } = {}) => {
+    const settings = new SettingsStore(join(tmpDir("settings-"), "settings.json"));
+    if (o.timestamps !== undefined) settings.save({ trustedTimestamps: o.timestamps });
+    const signingKey = SigningKey.load(join(tmpDir("key-"), "signing-key.json"));
+    const fetch = fakeTimestampFetch();
+    const { engine, sessionsDir } = offlineEngine({ settings, signingKey, fetch, ...(o.sessionsDir ? { sessionsDir: o.sessionsDir } : {}) });
+    return { engine, sessionsDir, settings, signingKey, fetch };
+  };
+
+  test("a session is sealed as it ends, with this Mac's key; timestamps only when they are on", async () => {
+    requireAssets();
+    for (const timestamps of [false, true]) {
+      const { engine, sessionsDir, signingKey, fetch } = rig({ timestamps });
+      const { sessionId } = await engine.start({ mode: "replay", dir: replayDir(), speed: "max", features: OFF });
+      await engine.current!.run();
+      await engine.sealed(sessionId);
+      const dir = join(sessionsDir, sessionId);
+      const seal = readSeal(dir)!;
+      const payload: SealPayload = JSON.parse(seal.payload);
+      expect(payload).toMatchObject({ when: "ended", key: signingKey.fingerprint, recording: { id: sessionId, mode: "replay" } });
+      expect(payload.files.map((f) => f.name)).toEqual(["host.wav", "transcript.jsonl", "utterances.jsonl", "transcriptions.jsonl"]);
+      expect(await checkSeal(dir)).toMatchObject({ intact: true });
+      expect(seal.timestamps.map((t) => t.authority)).toEqual(timestamps ? ["DigiCert", "GlobalSign", "FreeTSA"] : []);
+      expect(fetch.calls.length).toBe(timestamps ? 3 : 0);
+    }
+  });
+
+  test("a seal that fails is an error event, never a failed session; sealed() then resolves", async () => {
+    requireAssets();
+    const { engine, sessionsDir } = offlineEngine({ settings: new SettingsStore(join(tmpDir("s-"), "settings.json")), signingKey: { broken: true } as never });
+    const { sessionId } = await engine.start({ mode: "replay", dir: replayDir(), speed: "max", features: OFF });
+    await engine.current!.run();
+    await engine.sealed(sessionId);
+    expect(existsSync(join(sessionsDir, sessionId, "seal.json"))).toBe(false);
+    expect(engine.bus.history().filter((e) => e.type === "error").map((e) => e.data)).toEqual([
+      expect.objectContaining({ component: "seal", message: expect.stringMatching(/^could not seal the recording/) }),
+    ]);
+    await expect(engine.sealed("never-ran")).resolves.toBeUndefined();
+  });
+
+  test("a seal that fails with something that is not an Error says what it was; without a fetch of its own the engine uses the global one", async () => {
+    requireAssets();
+    const odd = { get fingerprint(): string { throw "no key here"; } } as never;
+    const { engine } = offlineEngine({ settings: new SettingsStore(join(tmpDir("s-"), "settings.json")), signingKey: odd });
+    const { sessionId } = await engine.start({ mode: "replay", dir: replayDir(), speed: "max", features: OFF });
+    await engine.current!.run();
+    await engine.sealed(sessionId);
+    expect(engine.bus.history().filter((e) => e.type === "error").map((e) => e.data.message)).toEqual(["could not seal the recording: no key here"]);
+
+    const settings = new SettingsStore(join(tmpDir("s-"), "settings.json"));
+    settings.save({ trustedTimestamps: true });
+    const { engine: global, sessionsDir } = offlineEngine({ settings, signingKey: SigningKey.load(join(tmpDir("key-"), "k.json")) });
+    const dir = recording(sessionsDir);
+    await inTmp(async () => { await global.transfer.prepare("20260925-120000", { audio: "none" }); });
+    expect(readSeal(dir)!.timestampFailures!.map((f) => f.error)).toEqual(["network disabled in tests", "network disabled in tests", "network disabled in tests"]);
+  });
+
+  test("a .tattle export goes ahead when the recording cannot be sealed, and says why", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const [signingKey, why] of [[{} as never, /^could not seal 20260925-120000: /], [{ get fingerprint(): string { throw "odd"; } } as never, /^could not seal 20260925-120000: odd$/]] as const) {
+      const { engine, sessionsDir } = offlineEngine({ settings: new SettingsStore(join(tmpDir("s-"), "settings.json")), signingKey });
+      recording(sessionsDir);
+      await inTmp(async () => { await expect(engine.transfer.prepare("20260925-120000", { audio: "none" })).resolves.toMatchObject({ fileName: "Episode 12 a b.tattle" }); });
+      expect(err).toHaveBeenLastCalledWith(expect.stringMatching(why));
+    }
+    err.mockRestore();
+  });
+
+  test("info: the transcript's file name and size, the seal, and whether timestamps are on", async () => {
+    const { engine, sessionsDir } = rig({ timestamps: true });
+    recording(sessionsDir);
+    expect(engine.transfer.info("20260925-120000")).toMatchObject({
+      transcriptFileName: "Episode 12 a b transcript.txt", bytes: { transcript: expect.any(Number) }, seal: null, trustedTimestamps: true,
+    });
+    await inTmp(async () => { await engine.transfer.prepare("20260925-120000", { format: "transcript" }); });
+    expect((engine.transfer.info("20260925-120000") as any).seal).toEqual({
+      when: "export", sealedAt: expect.any(String), timestamps: ["DigiCert", "GlobalSign", "FreeTSA"],
+    });
+  });
+
+  test("a transcript export: checked choices, a signed text file, and the timestamps choice saved for next time", async () => {
+    const { engine, sessionsDir, settings, fetch } = rig();
+    recording(sessionsDir);
+    await inTmp(async () => {
+      await expect(engine.transfer.prepare("20260925-120000", { format: "pdf" })).rejects.toMatchObject({ status: 400, message: "format must be tattle or transcript" });
+      await expect(engine.transfer.prepare("20260925-120000", { format: "transcript", timestamps: "yes" })).rejects.toMatchObject({ status: 400, message: "timestamps must be true or false" });
+      const r = await engine.transfer.prepare("20260925-120000", { format: "transcript" });
+      expect(r.fileName).toBe("Episode 12 a b transcript.txt");
+      const text = readFileSync(engine.transfer.file(r.token).path, "utf8");
+      expect(text).toContain("TATTLE CONVERSATION RECORD");
+      expect(text).toContain("] Nic: Hello");
+      expect(fetch.calls).toEqual([]);
+      expect(settings.read().trustedTimestamps).toBeUndefined();
+
+      const t = await engine.transfer.prepare("20260925-120000", { format: "transcript", timestamps: true });
+      expect(settings.read().trustedTimestamps).toBe(true);
+      const stamped = readFileSync(engine.transfer.file(t.token).path, "utf8");
+      expect(stamped).toMatch(/^Seal-Timestamp-DigiCert: /m); // the seal made offline gets its timestamps now
+      expect(stamped).toMatch(/^Timestamp-FreeTSA: /m);
+      expect(fetch.calls.length).toBe(6);
+      await engine.transfer.prepare("20260925-120000", { format: "transcript", timestamps: false });
+      expect(settings.read().trustedTimestamps).toBe(false);
+    });
+  });
+
+  test("a .tattle export seals a recording that has none, so the file carries the seal", async () => {
+    const { engine, sessionsDir } = rig();
+    const dir = recording(sessionsDir);
+    await inTmp(async () => { await engine.transfer.prepare("20260925-120000", { audio: "none" }); });
+    expect(JSON.parse(readSeal(dir)!.payload).when).toBe("export");
   });
 });
 

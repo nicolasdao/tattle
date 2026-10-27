@@ -300,6 +300,13 @@ export class SessionLibrary {
       }));
   }
 
+  /** Each speaker's current name, renames and merges followed; null for a speaker the events never named. */
+  speakerNames(id: string): (speakerId: string) => string | null {
+    this.dirOf(id);
+    const { recorded } = this.load(id);
+    return (speakerId) => recorded.names.get(resolveRecorded(recorded, speakerId)) ?? null;
+  }
+
   /** A recording's folder and the voice limits it ran with (`voices` in session.json; absent before they existed). */
   voicesOf(id: string): { dir: string; voices: Partial<Record<"host" | "remote", number>> | null } {
     const dir = this.dirOf(id);

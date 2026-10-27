@@ -65,6 +65,17 @@ describe("SettingsStore", () => {
     writeFileSync(s.path, "null", { mode: 0o600 });
     expect(s.read()).toEqual({});
   });
+
+  it("trusted timestamps (docs/recordings.md § Proof of a recording): kept when true or false, off when absent or odd; saving one keeps the engine", () => {
+    const s = tmpStore();
+    s.save({ transcriptionEngine: "apple" });
+    expect(s.save({ trustedTimestamps: true })).toEqual({ transcriptionEngine: "apple", trustedTimestamps: true });
+    expect(s.read()).toEqual({ transcriptionEngine: "apple", trustedTimestamps: true });
+    expect(s.save({ transcriptionEngine: "openai" })).toEqual({ transcriptionEngine: "openai", trustedTimestamps: true });
+    expect(s.save({ trustedTimestamps: false }).trustedTimestamps).toBe(false);
+    writeFileSync(s.path, JSON.stringify({ trustedTimestamps: "yes" }), { mode: 0o600 });
+    expect(s.read()).toEqual({});
+  });
 });
 
 /** TranscriptionSettings with every seam faked; `statuses` answers the Apple checks in turn (the last one repeats). */

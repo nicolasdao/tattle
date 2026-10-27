@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { JSONL_FILES, timestampId } from "./sessionStore.ts";
+import { SEAL_FILE, TRANSCRIPT_FILE } from "./seal.ts";
 import { extractStoredEntry, readZipEntries, readZipEntry, writeZip, ZipError, type ZipInput } from "./zip.ts";
 import { wavHeader } from "../audio/wav.ts";
 import { childEnv } from "../keys.ts";
@@ -27,8 +28,11 @@ export const AAC_BITRATE = 32_000;
 const execFileP = promisify(execFile);
 const run = (bin: string, args: string[]) => execFileP(bin, args, { env: childEnv() });
 
-/** Everything a recording folder holds besides audio; chats only when asked for. */
-const DATA_FILES = ["session.json", "meta.json", "speakers.json", ...JSONL_FILES.map((f) => `${f}.jsonl`)];
+/**
+ * Everything a recording folder holds besides audio; chats only when asked for. The seal and its frozen transcript
+ * travel byte for byte, so the importer can check them (docs/recordings.md § Proof of a recording).
+ */
+const DATA_FILES = ["session.json", "meta.json", "speakers.json", ...JSONL_FILES.map((f) => `${f}.jsonl`), SEAL_FILE, TRANSCRIPT_FILE];
 const STREAMS = ["host", "remote"] as const;
 // Imports come from other people, so every size in them is a claim to check. A two-hour show's data files weigh about
 // 3 MB in all; these limits leave ample room while stopping a small file from filling the disk.
