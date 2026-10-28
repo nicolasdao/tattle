@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-28
+
+### Added
+- Export → Transcript only: a signed text record of a recording (speakers, elapsed and local times, start time with its time zone), with an integrity record and openssl steps anyone can follow to check it without Tattle
+- Every recording is sealed when it ends: the SHA-256 of its audio and a frozen copy of its transcript, signed with a key made on this Mac (recordings from before are sealed at their first export); the seal travels in .tattle exports and survives an original-audio import byte for byte
+- Trusted timestamps (off by default): DigiCert, GlobalSign and FreeTSA certify when a seal and an exported transcript existed (RFC 3161); only a 32-byte fingerprint leaves the Mac
+- hey-tattle.com: real screenshots of the app (a live show, Start live, Insights) on the landing page and in the manual
+
+### Security
+- zod updated to 4.6.7: validating an oversized collection could exhaust memory (GHSA-mrhx-c7xc-m3w5)
+
 ## [1.0.3] - 2026-10-13
 
 ### Added
