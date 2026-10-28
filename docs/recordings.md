@@ -88,7 +88,7 @@ Inside:
 | Compressed | 56.7 MB, exported in 11 s | AAC at 32 kbps per stream through macOS's own `afconvert`. Decoded back, each stream has exactly its original sample count and no time shift (checked by cross-correlation), so transcript times still match the audio. |
 | Original | ≈ 452 MB | The WAVs byte for byte |
 | No audio | ≈ 3 MB | Fits email; the importer gets no playback or replay |
-| Transcript only | ≈ 40 KB an hour | Not a `.tattle` file: the signed text record (see [Transcript export](#transcript-export)) |
+| Transcript only | ≈ 150 KB (estimated) | Not a `.tattle` file: the signed text record (see [Transcript export](#transcript-export)) |
 
 With **Original** audio the seal still holds after import, byte for byte; with **Compressed** audio the two WAVs no longer match their fingerprints (AAC is lossy), though everything else does. To hand someone checkable proof, export the original audio.
 

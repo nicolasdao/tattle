@@ -51,7 +51,7 @@
       "isPartOf": { "@id": "https://hey-tattle.com/#website" },
       "inLanguage": "en",
       "datePublished": "2026-09-30",
-      "dateModified": "2026-10-12",
+      "dateModified": "2026-10-28",
       "about": { "@id": "https://hey-tattle.com/#app" },
       "author": { "@id": "https://nicolasdao.com/#nicolas-dao" },
       "publisher": { "@id": "https://cloudlesslabs.com#org" }
@@ -112,7 +112,7 @@
       <div class="strap"><span class="eyebrow">The manual · every feature</span><h1 class="name">How to use Tattle</h1></div>
     </div>
     <p class="dlede">Tattle listens to your calls. It <b>transcribes</b> them as people speak, <b>maps</b> the conversation on a timeline, and <b>fact-checks</b> claims as they're said. This page covers everything it does, from the first launch to the last export.</p>
-    <p class="dmeta">Last updated <time datetime="2026-10-12">12 Oct 2026</time> · Tattle for Mac is not affiliated with Tattle Civic Tech (tattle.co.in) or other apps named Tattle.</p>
+    <p class="dmeta">Last updated <time datetime="2026-10-28">28 Oct 2026</time> · Tattle for Mac is not affiliated with Tattle Civic Tech (tattle.co.in) or other apps named Tattle.</p>
     <div class="dhead-row">
       <a class="ca-download" data-when="mac" data-download href="https://github.com/nicolasdao/tattle/releases/latest">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12M6 10l6 6 6-6M4 21h16"/></svg>
@@ -601,16 +601,36 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
     <!-- ===================================================== 18 -->
     <section id="export-import">
       <h2><em>18</em> <span>Export and import</span></h2>
-      <p><span class="ui">Export</span> (in the header, or on a row in Recordings) saves a recording as one <code>.tattle</code> file in Downloads, to send by WhatsApp, email, or a cloud drive.</p>
+      <p><span class="ui">Export</span> (in the header, or on a row in Recordings) saves a recording as one <code>.tattle</code> file in Downloads, to send by WhatsApp, email, or a cloud drive, or as a signed transcript (<a href="#transcript-export">below</a>).</p>
       <div class="tbl"><table>
         <thead><tr><th scope="col">Audio</th><th scope="col">What you get</th><th scope="col">A two-hour show</th></tr></thead>
         <tbody>
           <tr><td>Compressed audio (default)</td><td>Sounds the same for speech; the best way to share.</td><td>About 57 MB</td></tr>
           <tr><td>Original audio</td><td>Exactly as recorded, lossless.</td><td>About 450 MB</td></tr>
           <tr><td>No audio</td><td>Transcript, timeline, fact-checks, and speakers; no playback or replay.</td><td>About 3 MB</td></tr>
+          <tr><td>Transcript only</td><td>Not a <code>.tattle</code> file: a signed text record of who said what, and when (<a href="#transcript-export">below</a>).</td><td>About 150 KB</td></tr>
         </tbody>
       </table></div>
       <p><span class="ui">Include my chats</span> is off by default: they are your own questions. The window says whether the file fits email (24 MB), WhatsApp (2 GB), or needs a cloud drive.</p>
+      <h3 id="transcript-export">Transcript only</h3>
+      <p>Choose <span class="ui">Transcript only</span> in the Export window to save <code>name transcript.txt</code>: a plain text record you can read, file, or hand to someone as a record of the conversation. It holds:</p>
+      <ul>
+        <li>A header: the recording's name, when it started (local time, with its time zone and UTC offset), how long it lasted, the speakers, how it was transcribed, and the Tattle versions that recorded and exported it.</li>
+        <li>Every line, as <code>[0:12:34 | 14:03:15] Sam: …</code>: the time since the recording started, then the local time it was said, then who said it. A new day gets its own line.</li>
+        <li>An integrity record: when the recording was sealed, the fingerprint of the key that signed it, its timestamps, and the fingerprints of its files. It also lists what the record proves, and what it does not.</li>
+        <li>How to check it, step by step, with the <code>openssl</code> command on any Mac or Linux computer, without Tattle.</li>
+        <li>A signature over the whole document, so any change to it, even one word, shows.</li>
+      </ul>
+      <p>Keep the file as it is: opening it and saving it again in an editor can change invisible characters and break its signature. Keep the recording's original audio with it too: export the recording again with <span class="ui">Original audio</span>, because the transcript's seal points to that audio.</p>
+      <h3 id="proof">Proof of a recording</h3>
+      <p>When a recording ends, Tattle seals it: it takes a fingerprint (SHA-256) of the audio and of the transcript as it stands, and signs them with a key made on your Mac the first time it is needed. Recordings from before version 1.1.0 are sealed the first time you export them, and the transcript says how long after the recording that was. The seal travels inside <code>.tattle</code> files.</p>
+      <ul>
+        <li><strong>It shows</strong> that the audio and the transcript have not changed since the recording was sealed. Anyone holding the original audio can recompute its fingerprint and compare.</li>
+        <li><strong>With trusted timestamps</strong>, it also shows when they existed. Turn on <span class="ui">Trusted timestamps</span> in the Export window (it appears with Transcript only). Three independent authorities (DigiCert, GlobalSign, and FreeTSA) each sign the time they saw the seal and the exported transcript. Only a fingerprint is sent, never your words or audio. The switch stays on for the recordings that follow, which are stamped as they end. Offline, the seal is made without timestamps, and gets them the next time you export it online.</li>
+        <li><strong>It does not show</strong> who the speakers are (you name them), that speech recognition heard every word right, that everyone consented, or who holds the key. The key identifies your copy of Tattle, not you: its fingerprint is printed in every transcript, so you can share it or publish it.</li>
+        <li><strong>Audio:</strong> the seal holds through an <span class="ui">Original audio</span> export and import, byte for byte. <span class="ui">Compressed audio</span> changes the audio's bytes, so its fingerprint no longer matches, though the transcript's still does.</li>
+      </ul>
+      <p>Renaming a speaker afterwards is fine: the transcript shows the current name, and the name the speaker had when sealed.</p>
       <h3 id="import">Import</h3>
       <p><span class="ui">Import</span> in the header (or in Recordings), or drop a <code>.tattle</code> file anywhere on the app. Files from the app's earlier names (<code>.conversation-recording</code>, <code>.podcast-recording</code>) import too. Then rename it or <span class="ui">Open it</span>. Importing a recording you already have offers <span class="ui">Open the one I have</span> or <span class="ui">Import as a copy</span>. An imported recording works like your own; its cost is what it cost whoever recorded it. Files are 4 GB at most, and a recording from a newer version of Tattle asks you to update first.</p>
     </section>
@@ -651,6 +671,7 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
           <tr><td>The first 10 minutes of a transcript; your show description and draft set</td><td>OpenRouter</td><td>Try on a recording; Create with AI</td></tr>
           <tr><td>A key being checked</td><td>Its own service</td><td>When you save it</td></tr>
           <tr><td>An update check</td><td>GitHub</td><td>At launch and every 4 hours, never on air</td></tr>
+          <tr><td>A fingerprint (32 bytes) of a recording's seal, and of an exported transcript; never its words or audio</td><td>DigiCert, GlobalSign, and FreeTSA</td><td>Only with <a href="#proof">trusted timestamps</a> on (off by default): when a recording ends, and when its transcript is exported</td></tr>
         </tbody>
       </table></div>
       <p>Calls to OpenRouter ask providers not to collect your data. A transcript-only show on Apple Speech sends nothing anywhere.</p>
@@ -666,9 +687,11 @@ shasum -a 256 Tattle-&lt;version&gt;-arm64.dmg                             # mat
           <tr><td>The app</td><td><code>/Applications/Tattle.app</code></td></tr>
           <tr><td>Recordings</td><td><code>~/Library/Application Support/Tattle/sessions/</code>, one folder per show of plain, readable files (File → Show Recordings in Finder)</td></tr>
           <tr><td>Your keys</td><td><code>~/Library/Application Support/Tattle/credentials.json</code>, readable only by your macOS user</td></tr>
-          <tr><td>The engine choice</td><td><code>~/Library/Application Support/Tattle/settings.json</code></td></tr>
+          <tr><td>The engine choice, and whether trusted timestamps are on</td><td><code>~/Library/Application Support/Tattle/settings.json</code></td></tr>
+          <tr><td>The key that signs your recordings</td><td><code>~/Library/Application Support/Tattle/signing-key.json</code>, readable only by your macOS user. Keep it: a new key would sign as someone else</td></tr>
+          <tr><td>A recording's seal</td><td><code>seal.json</code> and <code>transcript.jsonl</code>, in the recording's folder</td></tr>
           <tr><td>Your label sets</td><td><code>~/Library/Application Support/Tattle/labels/</code>, one file per set</td></tr>
-          <tr><td>Exports</td><td>Downloads, as <code>name.tattle</code> or <code>name.tattle-labels</code> (then "name (2)")</td></tr>
+          <tr><td>Exports</td><td>Downloads, as <code>name.tattle</code>, <code>name transcript.txt</code>, or <code>name.tattle-labels</code> (then "name (2)")</td></tr>
           <tr><td>The Apple Speech model</td><td>Managed by macOS</td></tr>
         </tbody>
       </table></div>

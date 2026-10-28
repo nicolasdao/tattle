@@ -2,7 +2,7 @@
 
 > Tattle listens to your calls. It **transcribes** them as people speak, **maps** the conversation on a timeline, and **fact-checks** claims as they're said. This page covers everything it does, from the first launch to the last export.
 
-Last updated 12 Oct 2026 · Tattle for Mac is not affiliated with Tattle Civic Tech (tattle.co.in) or other apps named Tattle.
+Last updated 28 Oct 2026 · Tattle for Mac is not affiliated with Tattle Civic Tech (tattle.co.in) or other apps named Tattle.
 
 The web page: https://hey-tattle.com/docs
 
@@ -447,15 +447,39 @@ A recording with audio has a player in the timeline's header: **Play** / **Pause
 
 https://hey-tattle.com/docs#export-import
 
-**Export** (in the header, or on a row in Recordings) saves a recording as one `.tattle` file in Downloads, to send by WhatsApp, email, or a cloud drive.
+**Export** (in the header, or on a row in Recordings) saves a recording as one `.tattle` file in Downloads, to send by WhatsApp, email, or a cloud drive, or as a signed transcript ([below](https://hey-tattle.com/docs#transcript-export)).
 
 | Audio | What you get | A two-hour show |
 | --- | --- | --- |
 | Compressed audio (default) | Sounds the same for speech; the best way to share. | About 57 MB |
 | Original audio | Exactly as recorded, lossless. | About 450 MB |
 | No audio | Transcript, timeline, fact-checks, and speakers; no playback or replay. | About 3 MB |
+| Transcript only | Not a `.tattle` file: a signed text record of who said what, and when ([below](https://hey-tattle.com/docs#transcript-export)). | About 150 KB |
 
 **Include my chats** is off by default: they are your own questions. The window says whether the file fits email (24 MB), WhatsApp (2 GB), or needs a cloud drive.
+
+### Transcript only
+
+Choose **Transcript only** in the Export window to save `name transcript.txt`: a plain text record you can read, file, or hand to someone as a record of the conversation. It holds:
+
+- A header: the recording's name, when it started (local time, with its time zone and UTC offset), how long it lasted, the speakers, how it was transcribed, and the Tattle versions that recorded and exported it.
+- Every line, as `[0:12:34 | 14:03:15] Sam: …`: the time since the recording started, then the local time it was said, then who said it. A new day gets its own line.
+- An integrity record: when the recording was sealed, the fingerprint of the key that signed it, its timestamps, and the fingerprints of its files. It also lists what the record proves, and what it does not.
+- How to check it, step by step, with the `openssl` command on any Mac or Linux computer, without Tattle.
+- A signature over the whole document, so any change to it, even one word, shows.
+
+Keep the file as it is: opening it and saving it again in an editor can change invisible characters and break its signature. Keep the recording's original audio with it too: export the recording again with **Original audio**, because the transcript's seal points to that audio.
+
+### Proof of a recording
+
+When a recording ends, Tattle seals it: it takes a fingerprint (SHA-256) of the audio and of the transcript as it stands, and signs them with a key made on your Mac the first time it is needed. Recordings from before version 1.1.0 are sealed the first time you export them, and the transcript says how long after the recording that was. The seal travels inside `.tattle` files.
+
+- **It shows** that the audio and the transcript have not changed since the recording was sealed. Anyone holding the original audio can recompute its fingerprint and compare.
+- **With trusted timestamps**, it also shows when they existed. Turn on **Trusted timestamps** in the Export window (it appears with Transcript only). Three independent authorities (DigiCert, GlobalSign, and FreeTSA) each sign the time they saw the seal and the exported transcript. Only a fingerprint is sent, never your words or audio. The switch stays on for the recordings that follow, which are stamped as they end. Offline, the seal is made without timestamps, and gets them the next time you export it online.
+- **It does not show** who the speakers are (you name them), that speech recognition heard every word right, that everyone consented, or who holds the key. The key identifies your copy of Tattle, not you: its fingerprint is printed in every transcript, so you can share it or publish it.
+- **Audio:** the seal holds through an **Original audio** export and import, byte for byte. **Compressed audio** changes the audio's bytes, so its fingerprint no longer matches, though the transcript's still does.
+
+Renaming a speaker afterwards is fine: the transcript shows the current name, and the name the speaker had when sealed.
 
 ### Import
 
@@ -499,6 +523,7 @@ No server of our own, no account, no analytics, no telemetry. Nothing goes to th
 | The first 10 minutes of a transcript; your show description and draft set | OpenRouter | Try on a recording; Create with AI |
 | A key being checked | Its own service | When you save it |
 | An update check | GitHub | At launch and every 4 hours, never on air |
+| A fingerprint (32 bytes) of a recording's seal, and of an exported transcript; never its words or audio | DigiCert, GlobalSign, and FreeTSA | Only with [trusted timestamps](https://hey-tattle.com/docs#proof) on (off by default): when a recording ends, and when its transcript is exported |
 
 Calls to OpenRouter ask providers not to collect your data. A transcript-only show on Apple Speech sends nothing anywhere.
 
@@ -515,9 +540,11 @@ https://hey-tattle.com/docs#files
 | The app | `/Applications/Tattle.app` |
 | Recordings | `~/Library/Application Support/Tattle/sessions/`, one folder per show of plain, readable files (File → Show Recordings in Finder) |
 | Your keys | `~/Library/Application Support/Tattle/credentials.json`, readable only by your macOS user |
-| The engine choice | `~/Library/Application Support/Tattle/settings.json` |
+| The engine choice, and whether trusted timestamps are on | `~/Library/Application Support/Tattle/settings.json` |
+| The key that signs your recordings | `~/Library/Application Support/Tattle/signing-key.json`, readable only by your macOS user. Keep it: a new key would sign as someone else |
+| A recording's seal | `seal.json` and `transcript.jsonl`, in the recording's folder |
 | Your label sets | `~/Library/Application Support/Tattle/labels/`, one file per set |
-| Exports | Downloads, as `name.tattle` or `name.tattle-labels` (then "name (2)") |
+| Exports | Downloads, as `name.tattle`, `name transcript.txt`, or `name.tattle-labels` (then "name (2)") |
 | The Apple Speech model | Managed by macOS |
 
 ## 22. Updates
