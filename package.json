@@ -48,7 +48,7 @@
     "electron": "^44.4.5",
     "electron-builder": "^26.15.3",
     "esbuild": "^0.28.2",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^21.0.4",
     "three": "0.170.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
